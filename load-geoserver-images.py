@@ -59,7 +59,7 @@ class asgsDB:
                 self.conn.close()
         except Exception as e:
             self.logger.error(f'Error detected closing cursor or connection. {e}')
-            sys.exc_info()[0]
+            #sys.exc_info()[0]
 
     def get_user(self):
         return self.user

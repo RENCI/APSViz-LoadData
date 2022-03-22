@@ -19,6 +19,8 @@ LABEL maintainer="lisa@renci.org"
 RUN mkdir /repo
 WORKDIR /repo
 
+RUN chmod 777 -R .
+
 # get the repos
 RUN git clone https://github.com/RENCI/APSViz-LoadData.git
 
@@ -26,8 +28,16 @@ RUN git clone https://github.com/RENCI/APSViz-LoadData.git
 WORKDIR /repo/APSViz-LoadData
 
 RUN apt-get install -y libgnutls28-dev
+
 # install the pip requirements
 RUN pip install -r requirements.txt
+
+RUN mkdir -p /home/nru/.ssh
+RUN chmod 777 /home/nru/.ssh
+
+# create a new non-root user
+RUN useradd -M -u 1000 nru
+USER nru
 
 ##########
 # at this point the container is ready to accept the launch command.
