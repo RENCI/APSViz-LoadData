@@ -15,8 +15,13 @@ ENV LOG_LEVEL=10
 # get some credit
 LABEL maintainer="lisa@renci.org"
 
+RUN apt-get install -y libgnutls28-dev
+
 # create a non-root user with a home directory
 RUN useradd -m -d /home/nru -u 1000 nru
+
+# switch to the new non-root user
+USER nru
 
 # make a directory for the repos and go there
 RUN mkdir /home/nru/repo
@@ -27,8 +32,6 @@ RUN git clone https://github.com/RENCI/APSViz-LoadData.git
 
 # move to the install directory
 WORKDIR /home/nru/repo/APSViz-LoadData
-
-RUN apt-get install -y libgnutls28-dev
 
 # install the pip requirements
 RUN pip install -r requirements.txt
