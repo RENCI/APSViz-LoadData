@@ -45,9 +45,6 @@ RUN mkdir -p /home/nru/.config/matplotlib
 # make everything read/write
 RUN chmod 777 -R /home/nru
 
-# switch to the new non-root user
-USER nru
-
 ##########
 # at this point the container is ready to accept the launch command.
 ##########
