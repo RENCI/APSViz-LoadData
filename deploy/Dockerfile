@@ -15,29 +15,35 @@ ENV LOG_LEVEL=10
 # get some credit
 LABEL maintainer="lisa@renci.org"
 
-# make a directory for the repos and go there
-RUN mkdir /repo
-WORKDIR /repo
+RUN apt-get install -y libgnutls28-dev
 
-RUN chmod 777 -R .
+# create a non-root user with a home directory
+RUN useradd -m -d /home/nru -u 1000 nru
+
+# switch to the new non-root user
+USER nru
+
+# make a directory for the repos and go there
+RUN mkdir /home/nru/repo
+WORKDIR /home/nru/repo
 
 # get the repos
 RUN git clone https://github.com/RENCI/APSViz-LoadData.git
 
 # move to the install directory
-WORKDIR /repo/APSViz-LoadData
-
-RUN apt-get install -y libgnutls28-dev
+WORKDIR /home/nru/repo/APSViz-LoadData
 
 # install the pip requirements
 RUN pip install -r requirements.txt
 
-RUN mkdir -p /home/nru/.ssh
-RUN chmod 777 /home/nru/.ssh
+# create a directory for the ssh keys
+RUN mkdir /home/nru/.ssh
 
-# create a new non-root user
-RUN useradd -M -u 1000 nru
-USER nru
+# this dir was expected by the running pod. this will insure that it isnt defaulted to something else
+RUN mkdir -p /home/nru/.config/matplotlib
+
+# make everything read/write
+RUN chmod 777 -R /home/nru
 
 ##########
 # at this point the container is ready to accept the launch command.
