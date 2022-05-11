@@ -1,6 +1,7 @@
 import os, sys
 import logging
 import psycopg2
+import csv
 
 from common.logging import LoggingUtil
 from urllib.parse import urlparse

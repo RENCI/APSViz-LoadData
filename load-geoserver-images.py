@@ -1,8 +1,6 @@
 import os, sys
 import fnmatch
 import logging
-import psycopg2
-import csv
 
 from geo.Geoserver import Geoserver
 from geoserver.catalog import Catalog
