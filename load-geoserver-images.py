@@ -160,18 +160,28 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
 def copy_pngs(logger, geoserver_host, ssh_userid, ssh_host, geoserver_proj_path, instance_id, final_path):
 
     from_path = f"{final_path}/insets/"
-    to_path = f"{ssh_userid}@{geoserver_host}:{geoserver_proj_path}/{instance_id}/"
+
+    # TODO: May put this back in final version
+    #to_path = f"{ssh_userid}@{geoserver_host}:{geoserver_proj_path}/{instance_id}/"
+
     to_path = f"{geoserver_proj_path}/{instance_id}/"
-    if (ssh_host == 'none'):
-        to_path = f"{geoserver_proj_path}/{instance_id}/"
+
+    # TODO: May put this back in final version
+    #if (ssh_host == 'none'):
+        #to_path = f"{geoserver_proj_path}/{instance_id}/"
+
     logger.info(f"Copying insets png files from: {from_path} to: {to_path}")
 
     # first create new directory if not already existing
     new_dir = f"{geoserver_proj_path}/{instance_id}"
     logger.debug(f"copy_pngs: Creating to path directory: {new_dir}")
-    mkdir_cmd = f'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {ssh_userid}@{geoserver_host} "mkdir -p {new_dir}"'
-    if  (ssh_host == 'none'):
-        mkdir_cmd = f"mkdir -p {new_dir}"
+
+    mkdir_cmd = f"mkdir -p {new_dir}"
+
+    # TODO: May put this back in final version
+    # mkdir_cmd = f'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {ssh_userid}@{geoserver_host} "mkdir -p {new_dir}"'
+    # if  (ssh_host == 'none'):
+        # mkdir_cmd = f"mkdir -p {new_dir}"
     logger.debug(f"copy_pngs: mkdir_cmd={mkdir_cmd}")
     os.system(mkdir_cmd)
 
@@ -238,7 +248,9 @@ def main(args):
     geoserver_host = os.environ.get('GEOSERVER_HOST', 'host.here.org').strip()
     ssh_userid = os.environ.get('SSH_USERNAME', 'user').strip()
     ssh_host = os.environ.get('SSH_HOST', 'none').strip()
-    geoserver_proj_path = os.environ.get('GEOSERVER_PROJ_PATH', '/projects').strip()
+    # TODO: Need to get this set correctly in eds-dev
+    # geoserver_proj_path = os.environ.get('GEOSERVER_PROJ_PATH', '/projects').strip()
+    geoserver_proj_path = "/fileserver/obs_pngs"
     logger.debug(f"Retrieved GeoServer env vars - url: {url} workspace: {worksp} geoserver_host: {geoserver_host} geoserver_proj_path: {geoserver_proj_path}")
 
     logger.info(f"Connecting to GeoServer at host: {url}")

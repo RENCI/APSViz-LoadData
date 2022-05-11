@@ -131,7 +131,7 @@ class ASGS_DB:
         logger.debug(f"DB name is: {self.get_dbname()}")
 
         # get the image server host name
-        host = os.environ.get('IMAGE_SERVER_HOST', 'none').strip()
+        host = os.environ.get('FILE_SERVER_HOST', 'none').strip()
         # need to remove the .edc from the geoserver_host for now
         if (host == 'none'):
             host = geoserver_host.replace('.edc', '')
