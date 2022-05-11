@@ -32,6 +32,7 @@ RUN git clone https://github.com/RENCI/APSViz-LoadData.git
 
 # move to the install directory
 WORKDIR /home/nru/repo/APSViz-LoadData
+RUN git checkout develop
 
 # install the pip requirements
 RUN pip install -r requirements.txt
