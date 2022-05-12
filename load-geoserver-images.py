@@ -6,7 +6,7 @@ from geo.Geoserver import Geoserver
 from geoserver.catalog import Catalog
 from common.logging import LoggingUtil
 from urllib.parse import urlparse
-from terria_catalog import TerriaCatalog
+from terria_catalogV8 import TerriaCatalog
 from asgs_db import ASGS_DB
 
  # create a new workspace in geoserver if it does not already exist
