@@ -217,7 +217,8 @@ class TerriaCatalog:
         self.logger = LoggingUtil.init_logging("APSVIZ.load-geoserver-images", level=log_level, line_format='medium',
                                           log_file_path=log_path)
         # TODO: Going to have to figure out how the catalog url is set and how to use it in TerriaMap
-        self.cat_url = cat_url
+        # self.cat_url = cat_url
+        self.cat_path = "/fileserver/terria-map/apsviz.json"
         self.host = host
         self.userid = userid
         self.userpw = userpw
@@ -229,13 +230,17 @@ class TerriaCatalog:
 
         self.logger.info(f'cat_url: {cat_url}')
         # get json from url, if exists
-        if(cat_url is not None):
+        #if(cat_url is not None):
+        if (self.cat_path is not None):
             # store the response of URL
-            response = urlopen(cat_url)
-            self.logger.info(f'read response: {response}')
-
+            #response = urlopen(cat_url)
+            #self.logger.info(f'read response: {response}')
             # storing the JSON response from url in data
-            self.cat_json = json.loads(response.read())
+            #self.cat_json = json.loads(response.read())
+            self.logger.info(f'reading apsviz catalog file{self.cat_path}')
+            f = open(self.cat_path)
+            self.cat_json = json.loads(f)
+            f.close()
 
     # create url for legend
     # need to get just basic layername and the adcirc var name
