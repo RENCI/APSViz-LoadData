@@ -100,7 +100,7 @@ class TerriaCatalog:
             '"name": "ADCIRC Data - Run Date: 05-02-2022",' \
             '"type": "group",' \
             '"members": [' \
-            ']' \ 
+            ']' \
         '},' \
         '],' \
         '"corsDomains": [' \
