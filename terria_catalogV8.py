@@ -239,7 +239,7 @@ class TerriaCatalog:
             #self.cat_json = json.loads(response.read())
             self.logger.info(f'reading apsviz catalog file{self.cat_path}')
             f = open(self.cat_path)
-            self.cat_json = json.loads(f)
+            self.cat_json = json.load(f)
             f.close()
 
     # create url for legend
