@@ -218,15 +218,16 @@ class TerriaCatalog:
                                           log_file_path=log_path)
         # TODO: Going to have to figure out how the catalog url is set and how to use it in TerriaMap
         # self.cat_url = cat_url
-        self.cat_path = "/fileserver/terria-map/apsviz.json"
         self.host = host
         self.userid = userid
         self.userpw = userpw
         self.fileserver_host = os.environ.get('FILESERVER_HOST', 'host.here.org').strip()
+        self.cat_path = os.environ.get('FILESERVER_CAT_PATH', 'path').strip()
         self.geoserver_url = os.environ.get('GEOSERVER_URL', 'url').strip()
-        self.geo_workspace = os.environ.get('GEO_WORKSPACE', 'url').strip()
+        #self.geoserver_url = "http://apsviz-geoserver-dev.apps.renci.org/geoserver/"
+        self.geo_workspace = os.environ.get('GEOSERVER_WORKSPACE', 'url').strip()
         # load test json as default
-        self.cat_json = json.loads(self.test_cat)
+        #self.cat_json = json.loads(self.test_cat)
 
         self.logger.info(f'cat_url: {cat_url}')
         # get json from url, if exists
@@ -267,7 +268,8 @@ class TerriaCatalog:
     # looks like this: 4007-2022050212-maxele
     # layername looks like this: ADCIRC_2021:4007-2022050212-namforecast_maxele.63.0.10
     def create_cat_itemid(self, layername, type):
-        id = ""
+        self.logger.debug(f'layername: {layername}  type: {type:}')
+        item_id = ""
         # bunch of parsing to do
         # first get instance_id
         tmp = layername.split(':')
@@ -278,14 +280,14 @@ class TerriaCatalog:
         if (type == "wms"):
             # have this in str1[2]: namforecast_maxele.63.0.10
             tmp = str1[2].split('_')
-            str1 = tmp.split('.')
+            str1 = tmp[1].split('.')
             id_pc2 = str1[0]
         else:
             id_pc2 = "obs"
 
-        id = f"{id_pc1}-{id_pc2}"
+        item_id = f"{id_pc1}-{id_pc2}"
 
-        return id
+        return item_id
     # need date in format MM-DD-YYYY
     # layername look like this: ADCIRC_2021:4014-2022050218-namforecast_maxele.63.0.10
     def get_datestr_from_layername(self, layername):
@@ -303,17 +305,18 @@ class TerriaCatalog:
     # name looks like this: Maximum Water Level - Run Location: RENCI Cycle: 12 Storm Name: namforecast ADCIRC Grid: NCSC_SAB_v1.23 (maxele.63.0.10)
     # or this: NOAA Observations - Location: RENCI Cycle: 12 Storm Name: namforecast ADCIRC Grid: NCSC_SAB_v1.23
     def update_item_info(self, info, date_str, name):
+        self.logger.info(f'info: {info}  date_str: {date_str}  name: {name}')
         # define search strings
         forecast_type_srch = "Storm Name:"
         grid_name_srch = "Grid:"
         # get forecast type
-        forecast_idx = name.index(forecast_type_srch) + len(forecast_type_srch) + 2
-        tmp = name[forecast_idx] # gives something like this: namforecast ADCIRC Grid: NCSC_SAB_v1.23 (maxele.63.0.10)
+        forecast_idx = name.index(forecast_type_srch) + len(forecast_type_srch) + 1
+        tmp = name[forecast_idx:] # gives something like this: namforecast ADCIRC Grid: NCSC_SAB_v1.23 (maxele.63.0.10)
         forecast_type = tmp.split(' ')[0]
 
         # get gridname
-        grid_name_idx = name.index(grid_name_srch) + len(grid_name_srch) + 2
-        tmp = name[grid_name_idx] # gives something like this: NCSC_SAB_v1.23
+        grid_name_idx = name.index(grid_name_srch) + len(grid_name_srch) + 1
+        tmp = name[grid_name_idx:] # gives something like this: NCSC_SAB_v1.23
         grid_name = tmp.split(' ')[0]
 
         # now update info content
@@ -346,39 +349,36 @@ class TerriaCatalog:
 
 
     def create_wms_data_item(self,
-                             id,
+                             item_id,
                              show,
                              name,
                              layers,
                              url,
-                             legend_url,
-                             info):
+                             legend_url):
         wms_item = {}
         wms_item = json.loads(self.cat_wms_item)
+        wms_item["id"] = item_id
         wms_item["show"] = show
         wms_item["name"] = name
         wms_item["layers"] = layers
         wms_item["url"] = url
-        wms_item["legends"][0].url = legend_url
-        wms_item["info"] = info
+        wms_item["legends"][0]["url"] = legend_url
 
         return wms_item
 
     def create_wfs_data_item(self,
-                             id,
+                             item_id,
                              show,
                              name,
                              type_names,
-                             url,
-                             info):
+                             url):
         wfs_item = {}
         wfs_item = json.loads(self.cat_wfs_item)
-        wfs_item["id"] = id
+        wfs_item["id"] = item_id
         wfs_item["show"] = show
         wfs_item["name"] = name
         wfs_item["typeNames"] = type_names
         wfs_item["url"] = url
-        wfs_item["info"] = info
 
         return wfs_item
 
@@ -416,10 +416,10 @@ class TerriaCatalog:
         # create url for legend
         legend_url= self.create_legend_url(layers)
         self.logger.debug(f'legend_url: {legend_url}')
-        id = self.create_cat_itemid(layers[0], "wms")
-        self.logger.debug(f'id: {id}')
+        item_id = self.create_cat_itemid(layers, "wms")
+        self.logger.debug(f'id: {item_id}')
         if (url is None):
-            url = f"{self.geoserver_url}/{self.geo_workspace}/wms/{self.geo_workspace}?service=wfs&version=1.3.0&request=GetCapabilities",
+            url = f"{self.geoserver_url}{self.geo_workspace}/wms/{self.geo_workspace}?service=wms&version=1.3.0&request=GetCapabilities"
         self.logger.debug(f'url: {url}')
 
         # add this item to the CURRENT date group in the catalog, create/add to current date group, if it does not exist
@@ -432,7 +432,7 @@ class TerriaCatalog:
 
         cat_item_list = cat_group["members"]
 
-        wms_item = self.create_wms_data_item(id, show, name, layers, url, legend_url)
+        wms_item = self.create_wms_data_item(item_id, show, name, layers, url, legend_url)
         info = self.update_item_info(wms_item["info"], date_str, name)
         wms_item["info"] = info
         cat_item_list.insert(0, wms_item)
@@ -440,11 +440,11 @@ class TerriaCatalog:
 
         # put this item list back into main catalog
         if (new_group):
-            self.cat_json.insert(0, cat_group)
+            self.cat_json["catalog"].insert(0, cat_group)
         else:
             self.cat_json["catalog"][0] = cat_group
 
-        return id
+        return item_id
 
 
     # put the newest items at the top and only show the last 5 runs - not possible?
@@ -457,9 +457,9 @@ class TerriaCatalog:
 
         new_group = False
 
-        id = self.create_cat_itemid(typeNames[0], "wfs")
+        item_id = self.create_cat_itemid(typeNames, "wfs")
         if (url is None):
-            url = f"{self.geoserver_url}/{self.geo_workspace}/wfs/{self.geo_workspace}?service=wfs&version=1.3.0&request=GetCapabilities"
+            url = f"{self.geoserver_url}{self.geo_workspace}/wfs/{self.geo_workspace}?service=wfs&version=1.3.0&request=GetCapabilities"
         self.logger.debug(f'url: {url}')
 
         # add this item to the CURRENT date group in the catalog, create/add to current date group, if it does not exist
@@ -472,7 +472,7 @@ class TerriaCatalog:
 
         cat_item_list = cat_group["members"]
 
-        wfs_item = self.create_wfs_data_item(id, show, name, typeNames, url)
+        wfs_item = self.create_wfs_data_item(item_id, show, name, typeNames, url)
         info = self.update_item_info(wfs_item["info"], date_str, name)
         wfs_item["info"] = info
         cat_item_list.insert(0, wfs_item)
@@ -484,7 +484,7 @@ class TerriaCatalog:
         else:
             self.cat_json["catalog"][0] = cat_group
 
-        return id
+        return item_id
 
 
     # update the TerriaMap data catalog with a list of wms and wfs layers
@@ -496,14 +496,14 @@ class TerriaCatalog:
 
         # first take care of the WMS layers
         for wms_layer_dict in layergrp["wms"]:
-            id = self.add_wms_item(wms_layer_dict["title"], wms_layer_dict["layername"])
+            item_id = self.add_wms_item(wms_layer_dict["title"], wms_layer_dict["layername"])
             if (("maxele" in wms_layer_dict["layername"]) and ("hsofs" in wms_layer_dict["title"])):
-                latest_layer_ids.append(id)
+                latest_layer_ids.append(item_id)
         # now do WFS layers
         for wfs_layer_dict in layergrp["wfs"]:
-            id = self.add_wfs_item(wfs_layer_dict["title"], wfs_layer_dict["layername"])
+            item_id = self.add_wfs_item(wfs_layer_dict["title"], wfs_layer_dict["layername"])
             if ("hsofs" in wfs_layer_dict["title"]):
-                latest_layer_ids.append(id)
+                latest_layer_ids.append(item_id)
 
         self.update_latest_results(latest_layer_ids)
 

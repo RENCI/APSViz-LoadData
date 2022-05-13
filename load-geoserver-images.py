@@ -246,9 +246,7 @@ def main(args):
     geoserver_host = os.environ.get('GEOSERVER_HOST', 'host.here.org').strip()
     ssh_userid = os.environ.get('SSH_USERNAME', 'user').strip()
     ssh_host = os.environ.get('SSH_HOST', 'none').strip()
-    # TODO: Need to get this set correctly in eds-dev
-    # geoserver_proj_path = os.environ.get('GEOSERVER_PROJ_PATH', '/projects').strip()
-    geoserver_proj_path = "/fileserver/obs_pngs"
+    geoserver_proj_path = os.environ.get('FILESERVER_OBS_PATH', '/obs_pngs').strip()
     logger.debug(f"Retrieved GeoServer env vars - url: {url} workspace: {worksp} geoserver_host: {geoserver_host} geoserver_proj_path: {geoserver_proj_path}")
 
     logger.info(f"Connecting to GeoServer at host: {url}")
