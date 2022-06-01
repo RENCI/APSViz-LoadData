@@ -132,7 +132,7 @@ class ASGS_DB:
         logger.debug(f"DB name is: {self.get_dbname()}")
 
         # get the image server host name
-        host = os.environ.get('FILE_SERVER_HOST', 'none').strip()
+        host = os.environ.get('FILESERVER_HOST_URL', 'none').strip()
         # need to remove the .edc from the geoserver_host for now
         if (host == 'none'):
             host = geoserver_host.replace('.edc', '')
@@ -147,7 +147,7 @@ class ASGS_DB:
             next(reader)  # Skip the header row.
             for row in reader:
                 logger.debug(f"opened csv file - saving this row to db: {row}")
-                png_url = f"https://{host}/obs_pngs/{self.instanceId}/{row[6]}"
+                png_url = f"{host}/obs_pngs/{self.instanceId}/{row[6]}"
                 sql_stmt = "INSERT INTO stations (stationid, stationname, state, lat, lon, node, filename, the_geom, instance_id, imageurl) VALUES (%s, %s, %s, %s, %s, %s, %s, ST_SetSRID(ST_MakePoint(%s, %s),4326), %s, %s)"
                 params = [row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[4], row[3], self.instanceId, png_url]
                 logger.debug(f"sql_stmt: {sql_stmt} params: {sql_stmt}")
