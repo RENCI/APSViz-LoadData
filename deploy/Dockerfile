@@ -15,7 +15,9 @@ ENV LOG_LEVEL=10
 # get some credit
 LABEL maintainer="lisa@renci.org"
 
+RUN apt-get update
 RUN apt-get install -y libgnutls28-dev
+RUN apt-get install -yq vim
 
 # create a non-root user with a home directory
 RUN useradd -m -d /home/nru -u 1000 nru
