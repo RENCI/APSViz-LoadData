@@ -213,6 +213,9 @@ def copy_pngs(logger, geoserver_host, ssh_userid, ssh_host, geoserver_proj_path,
 
 def main(args):
 
+    # define main data dir
+    data_directory = "/data"
+
     # define dict to hold all of the layers created in this run
     # arrays contain sub-dicts like this: {"title": "", "layername": ""}
     layergrp = {
@@ -258,7 +261,7 @@ def main(args):
 
     # final dir path needs to be well defined
     # dir structure looks like this: /data/<instance id>/mbtiles/<parameter name>.<zoom level>.mbtiles
-    final_path = "/data/" + instance_id + "/final"
+    final_path = f"{data_directory}/{instance_id}/final"
     mbtiles_path = final_path + "/mbtiles"
 
     # eventually use this to put tiffs into GeoServer as well
@@ -275,9 +278,9 @@ def main(args):
 
     # update TerriaMap data catalog
     # build url to find existing apsviz.json file
-    url_parts = urlparse(url)
-    cat_url = f"{url_parts.scheme}://{url_parts.hostname}/obs_pngs/apsviz.json"
-    tc = TerriaCatalog(cat_url, geoserver_host, ssh_userid, pswd)
+    # url_parts = urlparse(url)
+    # cat_url = f"{url_parts.scheme}://{url_parts.hostname}/obs_pngs/apsviz.json"
+    tc = TerriaCatalog(data_directory, geoserver_host, ssh_userid, pswd)
     tc.update(final_layergrp)
 
 
