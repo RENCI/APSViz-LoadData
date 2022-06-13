@@ -524,13 +524,7 @@ class TerriaCatalog:
         with open(tmp_path, 'w') as f:
             json.dump(self.cat_json, f, indent=4)
 
-        ''' do not move anywhere until testing
-        url_parts = urlparse(self.cat_url)
-        to_host = self.host
-        to_path = self.cat_save_path + url_parts.path
-
-        to_path = f"{self.userid}@{to_host}:{to_path}"
-        self.logger.info(f'to_path: {to_path}')
-        scp_cmd = f'scp -r -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {tmp_path} {to_path}'
-        os.system(scp_cmd)
-        '''
+        # now move this file to the terriamap wwwroot/init location
+        to_path = os.environ.get('FILESERVER_CAT_PATH', '/data/tmp.json').strip()
+	cp_cmd = f"cp {tmp_path} {to_path}"
+        os.system(cp_cmd)

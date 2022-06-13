@@ -43,6 +43,43 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name):
     return title
 
 
+def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemosaic_path, layergrp):
+    # format of mbtiles is ex: maxele.63.0.9.mbtiles
+    # pull out meaningful pieces of file name
+    # get all files in mbtiles dir and loop through
+    logger.info(f"instance_id: {instance_id} imagemosaic_path: {imagemosaic_path}")
+
+    for file in fnmatch.filter(os.listdir(imagemosaic_path), '*.zip'):
+        file_path = f"{imagemosaic_path}/{file}"
+        logger.debug(f"add_imagemosaic_coveragestores: file={file_path}")
+        layer_name = str(instance_id) + "_" + os.path.splitext(file)[0]
+        logger.info(f'Adding layer: {layer_name} into workspace: {worksp}')
+
+        # create coverage store and associate with .mbtiles file
+        # also creates layer
+        ret = geo.create_imagemosaic(lyr_name=layer_name,
+                                       path=file_path,
+                                       workspace=worksp)
+        logger.debug(f"Attempted to add imagemosaic coverage store, file path: {file_path}  return value: {ret}")
+        if (ret is None):  # coverage store successfully created
+
+            # now we just need to tweak the layer title to make it more
+            # readable in Terria Map
+            title = update_layer_title(logger, geo, instance_id, worksp, layer_name)
+
+            # update DB with url of layer for access from website NEED INSTANCE ID for this
+            layer_url = f'{url}/{worksp}/wcs?service=WCS&version=1.1.1&request=DescribeCoverage&identifiers={worksp}:{layer_name}'
+            logger.debug(f"Adding coverage store to DB, instanceId: {instance_id} coveragestore url: {layer_url}")
+            db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
+            asgsdb = ASGS_DB(logger, db_name, instance_id)
+            asgsdb.saveImageURL(file, layer_url)
+
+            # add this layer to the wms layer group dict
+            full_layername = f"{worksp}:{layer_name}"
+            layergrp["wms"].append({"title": title, "layername": full_layername})
+
+    return layergrp
+
 # add a coverage store to geoserver for each .mbtiles found in the staging dir
 def add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_path, layergrp):
     # format of mbtiles is ex: maxele.63.0.9.mbtiles
@@ -213,6 +250,9 @@ def copy_pngs(logger, geoserver_host, ssh_userid, ssh_host, geoserver_proj_path,
 
 def main(args):
 
+    # define main data dir
+    data_directory = "/data"
+
     # define dict to hold all of the layers created in this run
     # arrays contain sub-dicts like this: {"title": "", "layername": ""}
     layergrp = {
@@ -258,14 +298,14 @@ def main(args):
 
     # final dir path needs to be well defined
     # dir structure looks like this: /data/<instance id>/mbtiles/<parameter name>.<zoom level>.mbtiles
-    final_path = "/data/" + instance_id + "/final"
+    final_path = f"{data_directory}/{instance_id}/final"
     mbtiles_path = final_path + "/mbtiles"
+    imagemosaic_path = final_path + "/cogeo"
 
-    # eventually use this to put tiffs into GeoServer as well
-    #tiff_path = final_path + "/tiff"
 
     # add a coverage store to geoserver for each .mbtiles found in the staging dir
-    new_layergrp = add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_path, layergrp)
+    #new_layergrp = add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_path, layergrp)
+    new_layergrp = add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemosaic_path, layergrp)
 
     # now put NOAA OBS .csv file into geoserver
     final_layergrp = add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host, new_layergrp)
@@ -274,11 +314,9 @@ def main(args):
     copy_pngs(logger, geoserver_host, ssh_userid, ssh_host, geoserver_proj_path, instance_id, final_path)
 
     # update TerriaMap data catalog
-    # build url to find existing apsviz.json file
-    url_parts = urlparse(url)
-    cat_url = f"{url_parts.scheme}://{url_parts.hostname}/obs_pngs/apsviz.json"
-    tc = TerriaCatalog(cat_url, geoserver_host, ssh_userid, pswd)
+    tc = TerriaCatalog(data_directory, geoserver_host, ssh_userid, pswd)
     tc.update(final_layergrp)
+    # geo.upload_style("./st.xml", "maxele_style", "ADCIRC_2022", sld_version='1.0.0', overwrite=False)
 
 
 if __name__ == '__main__':
