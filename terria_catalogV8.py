@@ -146,11 +146,6 @@ class TerriaCatalog:
         '"layers": "layers",' \
         '"type": "wms",' \
         '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms",' \
-        '"legends": [' \
-            '{' \
-                '"url": "legendUrl"' \
-            '}' \
-        '],' \
         '"info": [' \
             '{' \
                 '"name": "Event Date",' \
@@ -365,7 +360,8 @@ class TerriaCatalog:
         wms_item["name"] = name
         wms_item["layers"] = layers
         wms_item["url"] = url
-        wms_item["legends"][0]["url"] = legend_url
+        # disable legends for ImageMosaics
+        # wms_item["legends"][0]["url"] = legend_url
 
         return wms_item
 
@@ -416,9 +412,11 @@ class TerriaCatalog:
 
         new_group = False
 
+        print(layers)
         # create url for legend
-        legend_url= self.create_legend_url(layers)
-        self.logger.debug(f'legend_url: {legend_url}')
+        legend_url= "N/A"
+        #legend_url= self.create_legend_url(layers)
+        #self.logger.debug(f'legend_url: {legend_url}')
         item_id = self.create_cat_itemid(layers, "wms")
         self.logger.debug(f'id: {item_id}')
         if (url is None):
