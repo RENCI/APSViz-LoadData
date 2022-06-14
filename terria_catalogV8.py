@@ -203,7 +203,7 @@ class TerriaCatalog:
 
 
 
-    def __init__(self, cat_url, host, userid, userpw):
+    def __init__(self, data_directory, host, userid, userpw):
 
         # get the log level and directory from the environment
         log_level: int = int(os.getenv('LOG_LEVEL', logging.INFO))
@@ -218,6 +218,7 @@ class TerriaCatalog:
                                           log_file_path=log_path)
         # TODO: Going to have to figure out how the catalog url is set and how to use it in TerriaMap
         # self.cat_url = cat_url
+        self.data_directory = data_directory
         self.host = host
         self.userid = userid
         self.userpw = userpw
@@ -230,7 +231,8 @@ class TerriaCatalog:
         # load test json as default
         #self.cat_json = json.loads(self.test_cat)
 
-        self.logger.info(f'cat_url: {cat_url}')
+        #self.logger.info(f'cat_url: {cat_url}')
+        self.logger.info(f'cat_path: {self.cat_path}')
         # get json from url, if exists
         #if(cat_url is not None):
         if (self.cat_path is not None):
@@ -519,7 +521,7 @@ class TerriaCatalog:
     # and then move that file to a remote host:/dir
     def save(self):
 
-        tmp_path = "/data/tmp_cat.json"
+        tmp_path = f"{self.data_directory}/tmp_cat.json"
         # save catalog file to local tmp file
         with open(tmp_path, 'w') as f:
             json.dump(self.cat_json, f, indent=4)
