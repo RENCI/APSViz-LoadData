@@ -528,5 +528,5 @@ class TerriaCatalog:
 
         # now move this file to the terriamap wwwroot/init location
         to_path = os.environ.get('FILESERVER_CAT_PATH', '/data/tmp.json').strip()
-	cp_cmd = f"cp {tmp_path} {to_path}"
+        cp_cmd = f"cp {tmp_path} {to_path}"
         os.system(cp_cmd)
