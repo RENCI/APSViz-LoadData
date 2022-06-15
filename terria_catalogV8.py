@@ -219,9 +219,7 @@ class TerriaCatalog:
         self.userpw = userpw
         self.fileserver_host = os.environ.get('FILESERVER_HOST', 'host.here.org').strip()
         self.cat_path = os.environ.get('FILESERVER_CAT_PATH', 'path').strip()
-        #self.geoserver_url = os.environ.get('GEOSERVER_URL', 'url').strip()
-        # try external url for now
-        self.geoserver_url = "http://apsviz-geoserver-dev.apps.renci.org/geoserver/"
+        self.geoserver_url = os.environ.get('GEOSERVER_URL', 'url').strip()
         self.geo_workspace = os.environ.get('GEOSERVER_WORKSPACE', 'url').strip()
         # load test json as default
         #self.cat_json = json.loads(self.test_cat)
