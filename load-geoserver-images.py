@@ -15,6 +15,20 @@ def add_workspace(logger, geo, worksp):
     if (geo.get_workspace(worksp) is None):
         geo.create_workspace(workspace=worksp)
 
+# upload raster layer styles, unless they already exist
+def upload_styles(logger, geo):
+    # find all styles in styles dir
+    styles = os.listdir("./styles")
+
+    # for each one check and see if they already exist in GeoServer
+    for style in styles:
+        style_name = os.path.splitext(style)[0]
+
+        # check to see if style exists
+        if geo.get_style(style_name) is None:
+            # doesn't exist - upload
+            logger.info(f"uploading style: {style_name}")
+            geo.upload_style(f"./styles/{style}")
 
 # tweak the layer title to make it more readable in Terria Map
 def update_layer_title(logger, geo, instance_id, worksp, layer_name):
@@ -295,6 +309,9 @@ def main(args):
 
     # create a new workspace in geoserver if it does not already exist
     add_workspace(logger, geo, worksp)
+
+    # upload raster styles
+    upload_styles(logger, geo)
 
     # final dir path needs to be well defined
     # dir structure looks like this: /data/<instance id>/mbtiles/<parameter name>.<zoom level>.mbtiles

@@ -89,6 +89,10 @@ example wfs dataset:
 
 class TerriaCatalog:
 
+    MAXELE_STYLE = 'maxele'
+    MAXWVEL_STYLE = 'maxwvel'
+    SWAN_STYLE = 'swan'
+
     cat_save_path = "/projects/ees/APSViz"
 
     test_cat = '{' \
@@ -143,9 +147,19 @@ class TerriaCatalog:
         '"name": "Name",' \
         '"description": "This data is produced by the ADCIRC model and presented through the ADCIRC Prediction System Visualizer",' \
         '"dataCustodian": "RENCI",' \
+        '"styles": "maxele_style"' \
         '"layers": "layers",' \
         '"type": "wms",' \
         '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms",' \
+        '"featureInfoTemplate": {' \
+            '"template": "<div><b>Value:</b>  {{GRAY_INDEX}}</div>",' \
+            '"formats": {' \
+                '"GRAY_INDEX": {' \
+                    '"type": "number",' \
+                    '"maximumFractionDigits": 3' \
+                '}' \
+            '}' \
+        '},' \
         '"info": [' \
             '{' \
                 '"name": "Event Date",' \
@@ -296,6 +310,21 @@ class TerriaCatalog:
 
         return date_str
 
+    # return layer style appropriate for this layer
+    # currently there are three styles:
+    # maxele_style - default
+    # maxwvel_style
+    # swan_style
+    def get_wms_style(self, layername):
+
+        if self.MAXWVEL_STYLE in layername:
+            return f'{self.MAXWVEL}_style'
+        elif self.SWAN_STYLE in layername:
+            return f'{self.SWAN_STYLE}_style'
+        else:
+            return f'{self.MAXELE_STYLE}_style'
+
+
     # create an info section for this group item
     # date_str looks like this: 05-02-2022
     # name looks like this: Maximum Water Level - Run Location: RENCI Cycle: 12 Storm Name: namforecast ADCIRC Grid: NCSC_SAB_v1.23 (maxele.63.0.10)
@@ -348,6 +377,7 @@ class TerriaCatalog:
                              item_id,
                              show,
                              name,
+                             style,
                              layers,
                              url,
                              legend_url):
@@ -356,6 +386,7 @@ class TerriaCatalog:
         wms_item["id"] = item_id
         wms_item["show"] = show
         wms_item["name"] = name
+        wms_item["styles"] = style
         wms_item["layers"] = layers
         wms_item["url"] = url
         # disable legends for ImageMosaics
@@ -430,8 +461,10 @@ class TerriaCatalog:
             cat_group = self.create_cat_group(date_str)
 
         cat_item_list = cat_group["members"]
+        # set the correct style for this layer
+        style = self.get_wms_style(layers)
 
-        wms_item = self.create_wms_data_item(item_id, show, name, layers, url, legend_url)
+        wms_item = self.create_wms_data_item(item_id, show, name, style, layers, url, legend_url)
         info = self.update_item_info(wms_item["info"], date_str, name)
         wms_item["info"] = info
         cat_item_list.insert(0, wms_item)
@@ -496,12 +529,12 @@ class TerriaCatalog:
         # first take care of the WMS layers
         for wms_layer_dict in layergrp["wms"]:
             item_id = self.add_wms_item(wms_layer_dict["title"], wms_layer_dict["layername"])
-            if (("maxele" in wms_layer_dict["layername"]) and ("hsofs" in wms_layer_dict["title"])):
+            if (("maxele" in wms_layer_dict["layername"]) and ("ec95d" in wms_layer_dict["title"])):
                 latest_layer_ids.append(item_id)
         # now do WFS layers
         for wfs_layer_dict in layergrp["wfs"]:
             item_id = self.add_wfs_item(wfs_layer_dict["title"], wfs_layer_dict["layername"])
-            if ("hsofs" in wfs_layer_dict["title"]):
+            if ("ec95d" in wfs_layer_dict["title"]):
                 latest_layer_ids.append(item_id)
 
         self.update_latest_results(latest_layer_ids)
