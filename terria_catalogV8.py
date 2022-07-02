@@ -449,7 +449,7 @@ class TerriaCatalog:
         item_id = self.create_cat_itemid(layers, "wms")
         self.logger.debug(f'id: {item_id}')
         if (url is None):
-            url = f"{self.geoserver_url}{self.geo_workspace}/wms/{self.geo_workspace}?service=wms&version=1.3.0&request=GetCapabilities"
+            url = f"{self.geoserver_url}/{self.geo_workspace}/wms/{self.geo_workspace}?service=wms&version=1.3.0&request=GetCapabilities"
         self.logger.debug(f'url: {url}')
 
         # add this item to the CURRENT date group in the catalog, create/add to current date group, if it does not exist
@@ -491,7 +491,7 @@ class TerriaCatalog:
 
         item_id = self.create_cat_itemid(typeNames, "wfs")
         if (url is None):
-            url = f"{self.geoserver_url}{self.geo_workspace}/wfs/{self.geo_workspace}?service=wfs&version=1.3.0&request=GetCapabilities"
+            url = f"{self.geoserver_url}/{self.geo_workspace}/wfs/{self.geo_workspace}?service=wfs&version=1.3.0&request=GetCapabilities"
         self.logger.debug(f'url: {url}')
 
         # add this item to the CURRENT date group in the catalog, create/add to current date group, if it does not exist
