@@ -147,7 +147,7 @@ class TerriaCatalog:
         '"name": "Name",' \
         '"description": "This data is produced by the ADCIRC model and presented through the ADCIRC Prediction System Visualizer",' \
         '"dataCustodian": "RENCI",' \
-        '"styles": "maxele_style"' \
+        '"styles": "maxele_style",' \
         '"layers": "layers",' \
         '"type": "wms",' \
         '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms",' \
@@ -318,7 +318,7 @@ class TerriaCatalog:
     def get_wms_style(self, layername):
 
         if self.MAXWVEL_STYLE in layername:
-            return f'{self.MAXWVEL}_style'
+            return f'{self.MAXWVEL_STYLE}_style'
         elif self.SWAN_STYLE in layername:
             return f'{self.SWAN_STYLE}_style'
         else:
