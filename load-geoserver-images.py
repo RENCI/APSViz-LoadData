@@ -310,7 +310,7 @@ def main(args):
     # create a new workspace in geoserver if it does not already exist
     add_workspace(logger, geo, worksp)
 
-    # upload raster styles
+    # upload raster styles, if they don't already exist
     upload_styles(logger, geo)
 
     # final dir path needs to be well defined
