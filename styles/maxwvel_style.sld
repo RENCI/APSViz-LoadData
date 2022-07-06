@@ -36,7 +36,7 @@
                 <sld:ColorMapEntry color="#94D45D" quantity="16.0" label="16.0 m"/>
                 <sld:ColorMapEntry color="#B3DA5E" quantity="17.0" label="17.0 m"/>
                 <sld:ColorMapEntry color="#CFE06C" quantity="18.0" label="18.0 m"/>
-                <sld:ColorMapEntry color="#E8E782" quantity="19.0v" label="19.0 m"/>
+                <sld:ColorMapEntry color="#E8E782" quantity="19.0" label="19.0 m"/>
                 <sld:ColorMapEntry color="#FEEF9A" quantity="20.0" label="20.0 m"/>
             </sld:ColorMap>
             <sld:ContrastEnhancement/>

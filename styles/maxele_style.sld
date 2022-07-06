@@ -17,14 +17,14 @@
               </sld:GrayChannel>
             </sld:ChannelSelection>
             <sld:ColorMap type="ramp">
-              <sld:ColorMapEntry color="#00005F" quantity="0.0" label="0.0 Meters"/>
-              <sld:ColorMapEntry color="#005FFF" quantity="0.5" label="0.5"/>
-              <sld:ColorMapEntry color="#00BFFF" quantity="1.0" label="1.0"/>
-              <sld:ColorMapEntry color="#5FFF9F" quantity="2.0" label="2.0"/>
-              <sld:ColorMapEntry color="#FFDF00" quantity="3.0" label="3.0"/>
-              <sld:ColorMapEntry color="#FF3F00" quantity="4.0" label="4.0"/>
-              <sld:ColorMapEntry color="#9F0000" quantity="5.0" label="5.0"/>
-              <sld:ColorMapEntry color="#7F0000" quantity="6.0" label="6.0"/>
+              <sld:ColorMapEntry color="#00005F" quantity="0.0" label="0.0 m"/>
+              <sld:ColorMapEntry color="#005FFF" quantity="0.5" label="0.5 m"/>
+              <sld:ColorMapEntry color="#00BFFF" quantity="1.0" label="1.0 m"/>
+              <sld:ColorMapEntry color="#5FFF9F" quantity="2.0" label="2.0 m"/>
+              <sld:ColorMapEntry color="#FFDF00" quantity="3.0" label="3.0 m"/>
+              <sld:ColorMapEntry color="#FF3F00" quantity="4.0" label="4.0 m"/>
+              <sld:ColorMapEntry color="#9F0000" quantity="5.0" label="5.0 m"/>
+              <sld:ColorMapEntry color="#7F0000" quantity="6.0" label="6.0 m"/>
             </sld:ColorMap>
             <sld:ContrastEnhancement/>
           </sld:RasterSymbolizer>
