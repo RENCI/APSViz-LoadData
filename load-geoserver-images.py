@@ -169,7 +169,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
     except (IOError, OSError):
         e = sys.exc_info()[0]
         logger.warning(f"WARNING - Cannot save station data in {dbname} DB. Error: {e}")
-        return layergrp
+        #return layergrp
 
     # ... using pre-defined postgresql JNDI feature store in Geoserver
     ret = geo.create_jndi_featurestore(store_name, worksp, overwrite=False)
