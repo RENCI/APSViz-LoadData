@@ -168,7 +168,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
         asgs_obsdb.insert_station_props(logger, geo, worksp, csv_file_path, geoserver_host)
     except (IOError, OSError):
         e = sys.exc_info()[0]
-        logger.warning(f"WARNING - Cannot save run properties in ASGS_DB. Error: {e}")
+        logger.warning(f"WARNING - Cannot save station data in {dbname} DB. Error: {e}")
         return layergrp
 
     # ... using pre-defined postgresql JNDI feature store in Geoserver
