@@ -155,6 +155,7 @@ class ASGS_DB:
                     logger.debug(f"sql_stmt: {sql_stmt} params: {sql_stmt}")
                     self.cursor.execute(sql_stmt, params)
                 except (Exception):
+                    self.conn.commit()
                     raise IOError
 
         self.conn.commit()
