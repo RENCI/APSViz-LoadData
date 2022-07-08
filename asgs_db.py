@@ -103,7 +103,8 @@ class ASGS_DB:
             'forcing.stormname': '',
             'asgs.enstorm': '',
             'ADCIRCgrid': '',
-            'monitoring.rmqmessaging.locationname': ''
+            'monitoring.rmqmessaging.locationname': '',
+            'instancename': ''
         }
         self.logger.info(f'Retrieving DB record metadata - instance id: {self.instance} uid: {self.uid}')
 

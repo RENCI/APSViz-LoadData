@@ -175,6 +175,11 @@ class TerriaCatalog:
                 '"name": "Grid Type",' \
                 '"content": "Content",' \
                 '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Instance Name",' \
+                '"content": "Content",' \
+                '"show": false' \
             '}' \
         ']' \
     '}'
@@ -204,6 +209,11 @@ class TerriaCatalog:
             '},' \
             '{' \
                 '"name": "Grid Type",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Instance Name",' \
                 '"content": "Content",' \
                 '"show": false' \
             '}' \
@@ -334,6 +344,7 @@ class TerriaCatalog:
         # define search strings
         forecast_type_srch = "Storm Name:"
         grid_name_srch = "Grid:"
+        inst_name_srch = "Instance:"
         # get forecast type
         forecast_idx = name.index(forecast_type_srch) + len(forecast_type_srch) + 1
         tmp = name[forecast_idx:] # gives something like this: namforecast ADCIRC Grid: NCSC_SAB_v1.23 (maxele.63.0.10)
@@ -344,17 +355,26 @@ class TerriaCatalog:
         tmp = name[grid_name_idx:] # gives something like this: NCSC_SAB_v1.23
         grid_name = tmp.split(' ')[0]
 
+        # get instance name
+        inst_name_idx = name.index(inst_name_srch) + len(inst_name_srch) + 1
+        tmp = name[inst_name_idx:] # gives something like this: ec95d-nam-bob3
+        inst_name = tmp.split(' ')[0]
+
+
         # now update info content
         info[0]["content"] = date_str
         # event type
         info[1]["content"] = forecast_type
-
+        # grid name
         info[2]["content"] = grid_name
+        # instance name
+        info[3]["content"] = inst_name
 
         return info
 
 
     # should only need to update workbench array in the catalog group.
+    # select value from "ASGS_Mon_config_item" where uid like '2022070712-%' and key='adcirc.gridname';
     def update_latest_results(self, latest_layer_ids):
 
         self.logger.info(f'latest_layer_ids: {latest_layer_ids}')
@@ -441,7 +461,6 @@ class TerriaCatalog:
 
         new_group = False
 
-        print(layers)
         # create url for legend
         legend_url= "N/A"
         #legend_url= self.create_legend_url(layers)
