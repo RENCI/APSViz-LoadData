@@ -158,6 +158,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
     store_name = str(instance_id) + "_station_props"
     dbname = "adcirc_obs"
     table_name = "stations"
+    style_name = "observations_style"
 
     logger.debug(f"csv_file_path: {csv_file_path} store name: {store_name}")
 
@@ -191,10 +192,13 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
             if len(date_list) == 3:
                 run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
         if (meta_dict['forcing.stormname'] == 'NA'):
-            title = f"NOAA Observations - Date: {run_date} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['asgs.enstorm']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
+            title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
         else:
-            title = f"NOAA Observations - Date: {run_date} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.stormname']}:{meta_dict['asgs.enstorm']} Advisory:{meta_dict['advisory']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
+            title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.stormname']}:{meta_dict['asgs.enstorm']} Advisory:{meta_dict['advisory']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
         geo.publish_featurestore_sqlview(name, title, store_name, sql, key_column='gid', geom_name='the_geom', geom_type='Geometry', workspace=worksp)
+
+        # now set the default style
+        geo.set_default_style(worksp, name, style_name)
 
         # add this layer to the wfs layer group dict
         full_layername = f"{worksp}:{name}"

@@ -149,6 +149,12 @@ class TerriaCatalog:
         '"dataCustodian": "RENCI",' \
         '"styles": "maxele_style",' \
         '"layers": "layers",' \
+        '"legends": [' \
+            '{' \
+                '"url": "url",' \
+                '"urlMimeType": "image/png"' \
+            '}' \
+        '],' \
         '"type": "wms",' \
         '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms",' \
         '"featureInfoTemplate": {' \
@@ -263,8 +269,7 @@ class TerriaCatalog:
             self.cat_json = json.load(f)
             f.close()
 
-    # create url for legend
-    # need to get just basic layername and the adcirc var name
+    # create url for wms legend
     # from the layers var which is formatted like this:
     # ADCIRC_2021:3548-14-nhcOfcl_maxwvel.63.0.9
     # or this, in the case of the swan var:
@@ -273,14 +278,11 @@ class TerriaCatalog:
 
         self.logger.debug(f'layers: {layers}')
         parts1 = layers.split(':')
-        parts2 = parts1[1].split('_')
-        if (len(parts2) > 3):
-            # this is the swan var name (more dashes in name)
-            # make it look like the other var names
-            parts2 = [parts2[0], f"{parts2[1]}_{parts2[2]}_{parts2[3]}"]
-        basic_layer_name = parts2[0]
-        adcirc_var_parts = parts2[1].split('.')
-        legend_url = f"http://{self.fileserver_host}/obs_pngs/{basic_layer_name}/{adcirc_var_parts[0]}.{adcirc_var_parts[1]}.colorbar.png"
+        workspace = parts1[0]
+        layer_name = parts1[1]
+
+        # need to use geoserver provided legend, but make it horizontal and transparent
+        legend_url = f"{self.geoserver_url}/{workspace}/ows?service=WMS&request=GetLegendGraphic&TRANSPARENT=TRUE&LEGEND_OPTIONS=layout:horizontal&format=image%2Fpng&width=20&height=20&layer={layer_name}"
 
         return legend_url
 
@@ -388,7 +390,7 @@ class TerriaCatalog:
         cat_group = {}
         cat_group = json.loads(self.cat_group)
         cat_group["id"] = date_str
-        cat_group["name"] = f"ADCIRC Date - Run Date: {date_str}"
+        cat_group["name"] = f"ADCIRC Data - Run Date: {date_str}"
 
         return cat_group
 
@@ -409,8 +411,7 @@ class TerriaCatalog:
         wms_item["styles"] = style
         wms_item["layers"] = layers
         wms_item["url"] = url
-        # disable legends for ImageMosaics
-        # wms_item["legends"][0]["url"] = legend_url
+        wms_item["legends"][0]["url"] = legend_url
 
         return wms_item
 
@@ -463,8 +464,8 @@ class TerriaCatalog:
 
         # create url for legend
         legend_url= "N/A"
-        #legend_url= self.create_legend_url(layers)
-        #self.logger.debug(f'legend_url: {legend_url}')
+        legend_url= self.create_legend_url(layers)
+        self.logger.debug(f'legend_url: {legend_url}')
         item_id = self.create_cat_itemid(layers, "wms")
         self.logger.debug(f'id: {item_id}')
         if (url is None):
