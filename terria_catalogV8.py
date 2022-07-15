@@ -196,8 +196,8 @@ class TerriaCatalog:
         '"name": "Name",' \
         '"description": "This data is produced by the ADCIRC model and presented through the ADCIRC Prediction System Visualizer",' \
         '"dataCustodian": "RENCI",' \
-        '"type": "wfs",' \
-        '"typeNames": "layers",' \
+        '"type": "wms",' \
+        '"layers": "layers",' \
         '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms",' \
         '"featureInfoTemplate": {' \
             '"template": "<div class=\u2019stations\u2019><figure><img src={{imageurl}}><figcaption>{{stationname}}</figcaption></figure></div>"' \
@@ -292,9 +292,18 @@ class TerriaCatalog:
     def create_cat_itemid(self, layername, type):
         self.logger.debug(f'layername: {layername}  type: {type:}')
         item_id = ""
+
         # bunch of parsing to do
         # first get instance_id
         tmp = layername.split(':')
+        # if the instance id is not split from string
+        # assume this layer is different because it is in storm format
+        # ie 55555-13-nhcOfcl_maxwvel63
+        # so just return whole string for id
+        if (len(tmp) == 1):
+            return(layername)
+
+        # otherwise go ahead and parse as normal
         str1 = tmp[1].split('-')
         id_pc1 = f"{str1[0]}-{str1[1]}"
 
@@ -319,6 +328,22 @@ class TerriaCatalog:
         time_pc = str_array[1]
         # now have 2022050218 in time_pc
         date_str = f"{time_pc[4:6]}-{time_pc[6:8]}-{time_pc[0:4]}"
+
+        return date_str
+
+    def get_datestr_from_title(self, title):
+        date_str = ""
+        srch_str = "Date:"
+        str_len = len(srch_str)
+        date_len = len("mm-dd-yyyy")
+
+        # Find the first index of the srch_str
+        index = title.index(srch_str)
+        # now find start position of actual date string
+        # need to add 1 to account for space
+        date_idx = index + str_len + 1
+        # collect full date string
+        date_str = title[date_idx:date_idx + date_len]
 
         return date_str
 
@@ -426,7 +451,7 @@ class TerriaCatalog:
         wfs_item["id"] = item_id
         wfs_item["show"] = show
         wfs_item["name"] = name
-        wfs_item["typeNames"] = type_names
+        wfs_item["layers"] = type_names
         wfs_item["url"] = url
 
         return wfs_item
@@ -474,7 +499,7 @@ class TerriaCatalog:
 
         # add this item to the CURRENT date group in the catalog, create/add to current date group, if it does not exist
         cat_group = self.cat_json['catalog'][0]
-        date_str = self.get_datestr_from_layername(layers)
+        date_str = self.get_datestr_from_title(name)
         if (date_str not in cat_group["name"]):
             # create new group
             new_group = True
@@ -516,7 +541,7 @@ class TerriaCatalog:
 
         # add this item to the CURRENT date group in the catalog, create/add to current date group, if it does not exist
         cat_group = self.cat_json['catalog'][0]
-        date_str = self.get_datestr_from_layername(typeNames)
+        date_str = self.get_datestr_from_title(name)
         if (date_str not in cat_group["name"]):
             # create new group
             new_group = True
