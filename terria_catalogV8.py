@@ -580,7 +580,8 @@ class TerriaCatalog:
         for wfs_layer_dict in layergrp["wfs"]:
             item_id = self.add_wfs_item(wfs_layer_dict["title"], wfs_layer_dict["layername"])
             if ("ec95d" in wfs_layer_dict["title"]):
-                latest_layer_ids.append(item_id)
+                # put this layer on top
+                latest_layer_ids.insert(0, item_id)
 
         self.update_latest_results(latest_layer_ids)
 
