@@ -134,9 +134,9 @@ class ASGS_DB:
 
         # get the image server host name
         host = os.environ.get('FILESERVER_HOST_URL', 'none').strip()
-        # need to remove the .edc from the geoserver_host for now
-        if (host == 'none'):
-            host = geoserver_host.replace('.edc', '')
+        # need to remove the .edc from the geoserver_host for now - 7/18/22 - this no longer apllies for k8s runs
+        #if (host == 'none'):
+            #host = geoserver_host.replace('.edc', '')
 
         # open the stationProps.csv file and save in db
         # must create the_geom from lat, lon provided in csv file
