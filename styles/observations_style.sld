@@ -19,7 +19,7 @@
               <Mark>
                 <WellKnownName>circle</WellKnownName>
                 <Fill>
-                  <CssParameter name="fill">#a020f0</CssParameter>
+                  <CssParameter name="fill">#3d4849</CssParameter>
                 </Fill>
                 <Stroke>
                   <CssParameter name="stroke">#000000</CssParameter>
@@ -35,7 +35,7 @@
           <Filter xmlns="http://www.opengis.net/ogc">
             <PropertyIsEqualTo>
               <PropertyName>type</PropertyName>
-              <Literal>WATER_LEVEL</Literal>
+              <Literal>WAVE_HEIGHT</Literal>
             </PropertyIsEqualTo>
           </Filter>
           <PointSymbolizer>
