@@ -369,12 +369,13 @@ class TerriaCatalog:
     def update_item_info(self, info, date_str, name):
         self.logger.info(f'info: {info}  date_str: {date_str}  name: {name}')
         # define search strings
-        forecast_type_srch = "Storm Name:"
+        forecast_type_srch = "Forecast Type:"
         grid_name_srch = "Grid:"
         inst_name_srch = "Instance:"
+        
         # get forecast type
         forecast_idx = name.index(forecast_type_srch) + len(forecast_type_srch) + 1
-        tmp = name[forecast_idx:] # gives something like this: namforecast ADCIRC Grid: NCSC_SAB_v1.23 (maxele.63.0.10)
+        tmp = name[forecast_idx:] # gives something like this: 'nameforecast Location: PSC Instance: ec95d-al01-bob-psc ADCIRC Grid: ec95d'
         forecast_type = tmp.split(' ')[0]
 
         # get gridname
