@@ -2,9 +2,10 @@ from urllib.request import urlopen
 from urllib.parse import urlparse
 from common.logging import LoggingUtil
 from datetime import datetime, timedelta
+from apsviz_db import APSVIZ_DB
 import logging
 import json
-import os
+import os, sys
 
 
 # handles editing of TerriaMap data catalog (apsviz.json)
@@ -92,54 +93,6 @@ class TerriaCatalog:
     MAXELE_STYLE = 'maxele'
     MAXWVEL_STYLE = 'maxwvel'
     SWAN_STYLE = 'swan'
-
-    cat_save_path = "/projects/ees/APSViz"
-
-    test_cat = '{' \
-        '"workbench": [ \
-        ],' \
-        '"catalog": [' \
-        '{' \
-            '"id": "05-02-2022",' \
-            '"name": "ADCIRC Data - Run Date: 05-02-2022",' \
-            '"type": "group",' \
-            '"members": [' \
-            ']' \
-        '},' \
-        '],' \
-        '"corsDomains": [' \
-            '"corsproxy.com",' \
-            '"programs.communications.gov.au",' \
-            '"www.asris.csiro.au",' \
-            '"mapsengine.google.com"' \
-        '],' \
-        '"homeCamera": {' \
-            '"west": -96,' \
-            '"south": 20,' \
-            '"east": -61,' \
-            '"north": 46' \
-        '},' \
-        '"baseMaps": {' \
-            '"items": [' \
-               '{' \
-                '"item": {' \
-                    '"id": "basemap-bing-roads",' \
-                    '"name": "Bing Maps Roads",' \
-               '},' \
-               '"image": "build/TerriaJS/images/bing-maps-roads.png"' \
-                '}' \
-            ']' \
-        '}' \
-        '"viewerMode": "2D",' \
-    '}'
-
-    cat_group = '{' \
-        '"id": "Id",' \
-        '"type": "group",' \
-        '"name": "Name",' \
-        '"members": []' \
-    '}'
-
 
     cat_wms_item = '{' \
         '"id": "Id",' \
@@ -241,33 +194,18 @@ class TerriaCatalog:
         # create a logger
         self.logger = LoggingUtil.init_logging("APSVIZ.load-geoserver-images", level=log_level, line_format='medium',
                                           log_file_path=log_path)
-        # TODO: Going to have to figure out how the catalog url is set and how to use it in TerriaMap
-        # self.cat_url = cat_url
+
         self.data_directory = data_directory
         self.host = host
         self.userid = userid
         self.userpw = userpw
         self.fileserver_host = os.environ.get('FILESERVER_HOST', 'host.here.org').strip()
-        self.cat_path = os.environ.get('FILESERVER_CAT_PATH', 'path').strip()
         self.geoserver_url = os.environ.get('GEOSERVER_URL_EXT', 'url').strip()
         self.geo_workspace = os.environ.get('GEOSERVER_WORKSPACE', 'url').strip()
-        # load test json as default
-        #self.cat_json = json.loads(self.test_cat)
 
-        #self.logger.info(f'cat_url: {cat_url}')
-        self.logger.info(f'cat_path: {self.cat_path}')
-        # get json from url, if exists
-        #if(cat_url is not None):
-        if (self.cat_path is not None):
-            # store the response of URL
-            #response = urlopen(cat_url)
-            #self.logger.info(f'read response: {response}')
-            # storing the JSON response from url in data
-            #self.cat_json = json.loads(response.read())
-            self.logger.info(f'reading apsviz catalog file{self.cat_path}')
-            f = open(self.cat_path)
-            self.cat_json = json.load(f)
-            f.close()
+        # create apsviz db object
+        self.apsviz_db = APSVIZ_DB(self.logger)
+
 
     # create url for wms legend
     # from the layers var which is formatted like this:
@@ -408,17 +346,15 @@ class TerriaCatalog:
         self.logger.info(f'latest_layer_ids: {latest_layer_ids}')
 
         if (len(latest_layer_ids) > 0):
-            self.cat_json["workbench"] = latest_layer_ids
+            self.apsviz_db.update_workbench(latest_layer_ids)
 
 
     # create a new catalog group for a new day.
     def create_cat_group(self, date_str):
-        cat_group = {}
-        cat_group = json.loads(self.cat_group)
-        cat_group["id"] = date_str
-        cat_group["name"] = f"ADCIRC Data - Run Date: {date_str}"
 
-        return cat_group
+        cat_name = f"ADCIRC Data - Run Date: {date_str}"
+        self.apsviz_db.create_new_catalog(self, date_str, cat_name, True, date_str)
+
 
 
     def create_wms_data_item(self,
@@ -498,29 +434,27 @@ class TerriaCatalog:
             url = f"{self.geoserver_url}/{self.geo_workspace}/wms/{self.geo_workspace}?service=wms&version=1.3.0&request=GetCapabilities"
         self.logger.debug(f'url: {url}')
 
-        # add this item to the CURRENT date group in the catalog, create/add to current date group, if it does not exist
-        cat_group = self.cat_json['catalog'][0]
+        # add to correct catalog date group, if that group does not exist, create a new one
         date_str = self.get_datestr_from_title(name)
-        if (date_str not in cat_group["name"]):
+        # check to see if this catalog group already exists
+        if (not self.apsviz_db.find_cat_group()):
             # create new group
-            new_group = True
-            cat_group = self.create_cat_group(date_str)
+            self.create_cat_group(date_str)
 
-        cat_item_list = cat_group["members"]
         # set the correct style for this layer
         style = self.get_wms_style(layers)
 
         wms_item = self.create_wms_data_item(item_id, show, name, style, layers, url, legend_url)
         info = self.update_item_info(wms_item["info"], date_str, name)
         wms_item["info"] = info
-        cat_item_list.insert(0, wms_item)
-        cat_group["members"] = cat_item_list
 
-        # put this item list back into main catalog
-        if (new_group):
-            self.cat_json["catalog"].insert(0, cat_group)
-        else:
-            self.cat_json["catalog"][0] = cat_group
+        # now add this member item to the catalog group
+        grid_type = info[2]["content"]
+        event_type = info[1]["content"]
+        run_date = info[0]["content"]
+        instance_name = info[3]["content"]
+
+        self.apsviz_db.add_cat_item(grid_type, event_type, run_date, instance_name, wms_item)
 
         return item_id
 
@@ -540,27 +474,24 @@ class TerriaCatalog:
             url = f"{self.geoserver_url}/{self.geo_workspace}/wfs/{self.geo_workspace}?service=wfs&version=1.3.0&request=GetCapabilities"
         self.logger.debug(f'url: {url}')
 
-        # add this item to the CURRENT date group in the catalog, create/add to current date group, if it does not exist
-        cat_group = self.cat_json['catalog'][0]
+        # add to correct catalog date group, if that group does not exist, create a new one
         date_str = self.get_datestr_from_title(name)
-        if (date_str not in cat_group["name"]):
+        # check to see if this catalog group already exists
+        if (not self.apsviz_db.find_cat_group()):
             # create new group
-            new_group = True
-            cat_group = self.create_cat_group(date_str)
-
-        cat_item_list = cat_group["members"]
+            self.create_cat_group(date_str)
 
         wfs_item = self.create_wfs_data_item(item_id, show, name, typeNames, url)
         info = self.update_item_info(wfs_item["info"], date_str, name)
         wfs_item["info"] = info
-        cat_item_list.insert(0, wfs_item)
-        cat_group["members"] = cat_item_list
 
-        # put this item list back into main catalog
-        if (new_group):
-            self.cat_json.insert(0, cat_group)
-        else:
-            self.cat_json["catalog"][0] = cat_group
+        # now add this member item to the catalog group
+        grid_type = info[2]["content"]
+        event_type = info[1]["content"]
+        run_date = info[0]["content"]
+        instance_name = info[3]["content"]
+
+        self.apsviz_db.add_cat_item(grid_type, event_type, run_date, instance_name, wfs_item)
 
         return item_id
 
@@ -588,21 +519,3 @@ class TerriaCatalog:
 
         # now delete the groups older than 14 days
         #self.rm_oldest_groups()
-
-        # now save all of these updates to the catalog file
-        self.save()
-
-
-    # save the current version (in memory) to a local file
-    # and then move that file to a remote host:/dir
-    def save(self):
-
-        tmp_path = f"{self.data_directory}/tmp_cat.json"
-        # save catalog file to local tmp file
-        with open(tmp_path, 'w') as f:
-            json.dump(self.cat_json, f, indent=4)
-
-        # now move this file to the terriamap wwwroot/init location
-        to_path = os.environ.get('FILESERVER_CAT_PATH', '/data/tmp.json').strip()
-        cp_cmd = f"cp {tmp_path} {to_path}"
-        os.system(cp_cmd)
