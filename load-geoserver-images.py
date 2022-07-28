@@ -7,6 +7,7 @@ from geoserver.catalog import Catalog
 from common.logging import LoggingUtil
 from urllib.parse import urlparse
 from terria_catalogV8 import TerriaCatalog
+from terria_catalogV8DB import TerriaCatalogDB
 from asgs_db import ASGS_DB
 
  # create a new workspace in geoserver if it does not already exist
@@ -344,6 +345,11 @@ def main(args):
     # update TerriaMap data catalog
     tc = TerriaCatalog(data_directory, geoserver_host, ssh_userid, pswd)
     tc.update(final_layergrp)
+
+    # save TerriaMap data catalog to DB
+    tc_db = TerriaCatalogDB(data_directory, geoserver_host, ssh_userid, pswd)
+    tc_db.update(final_layergrp)
+
     # geo.upload_style("./st.xml", "maxele_style", "ADCIRC_2022", sld_version='1.0.0', overwrite=False)
 
 

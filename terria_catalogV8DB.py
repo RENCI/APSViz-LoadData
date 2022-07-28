@@ -88,7 +88,7 @@ example wfs dataset:
         ]
 '''
 
-class TerriaCatalog:
+class TerriaCatalogDB:
 
     MAXELE_STYLE = 'maxele'
     MAXWVEL_STYLE = 'maxwvel'
