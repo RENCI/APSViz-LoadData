@@ -353,7 +353,7 @@ class TerriaCatalogDB:
     def create_cat_group(self, date_str):
 
         cat_name = f"ADCIRC Data - Run Date: {date_str}"
-        self.apsviz_db.create_new_catalog(self, date_str, cat_name, True, date_str)
+        self.apsviz_db.create_new_catalog(date_str, cat_name, False)
 
 
 
@@ -437,7 +437,7 @@ class TerriaCatalogDB:
         # add to correct catalog date group, if that group does not exist, create a new one
         date_str = self.get_datestr_from_title(name)
         # check to see if this catalog group already exists
-        if (not self.apsviz_db.find_cat_group()):
+        if (not self.apsviz_db.find_cat_group(date_str)):
             # create new group
             self.create_cat_group(date_str)
 
@@ -477,7 +477,7 @@ class TerriaCatalogDB:
         # add to correct catalog date group, if that group does not exist, create a new one
         date_str = self.get_datestr_from_title(name)
         # check to see if this catalog group already exists
-        if (not self.apsviz_db.find_cat_group()):
+        if (not self.apsviz_db.find_cat_group(date_str)):
             # create new group
             self.create_cat_group(date_str)
 

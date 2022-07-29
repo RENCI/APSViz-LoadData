@@ -1,13 +1,12 @@
 import os, sys
 import logging
 import psycopg2
+import json
 
 from common.logging import LoggingUtil
 from urllib.parse import urlparse
 
 class APSVIZ_DB:
-
-    db_name = "apsviz"
 
     # dbname looks like this: 'asgs_dashboard'
     # instance_id looks like this: '2744-2021050618-namforecast'
@@ -15,8 +14,9 @@ class APSVIZ_DB:
         self.conn = None
         self.logger = logger
 
-        self.user = os.getenv('ASGS_DB_USERNAME', 'user').strip()
-        self.pswd = os.getenv('ASGS_DB_PASSWORD', 'password').strip()
+        self.user = os.getenv('APSVIZ_DB_USERNAME', 'user').strip()
+        self.pswd = os.getenv('APSVIZ_DB_PASSWORD', 'password').strip()
+        self.db_name = os.getenv('APSVIZ_DB_DATABASE', 'database').strip()
         self.host = os.getenv('ASGS_DB_HOST', 'host').strip()
         self.port = os.getenv('ASGS_DB_PORT', '5432').strip()
 
@@ -65,7 +65,7 @@ class APSVIZ_DB:
 
         try:
             sql_stmt = 'SELECT name FROM catalog WHERE id=%s'
-            params = [f"{date_str}"]
+            params = [f"{date_str}",]
             self.logger.debug(f"APSVIZ_DB: sql statement is: {sql_stmt} params are: {params}")
 
             self.cursor.execute(sql_stmt, params)
@@ -77,17 +77,18 @@ class APSVIZ_DB:
             e = sys.exc_info()[0]
             self.logger.error(f"FAILURE - Cannot retrieve catalog id. error {e}")
 
-        self.logger.info(f'APSVIZ_DB: catalog type id is: {cat_type_id}')
+        self.logger.info(f'APSVIZ_DB: Found catalog group? {exists}')
         return exists
 
     # retrieve the catalog type id, given the type name - i.e. "group"
-    def get_catalog_type_id(self, type):
+    def get_catalog_type_id(self, cat_type):
+        self.logger.info(f'APSVIZ_DB: get_catalog_type_id, cat_type:{cat_type}')
 
         cat_type_id = -1
 
         try:
             sql_stmt = 'SELECT id FROM catalog_type_lu WHERE name=%s'
-            params = [f"{type}"]
+            params = [f"{cat_type}",]
             self.logger.debug(f"APSVIZ_DB: sql statement is: {sql_stmt} params are: {params}")
 
             self.cursor.execute(sql_stmt, params)
@@ -135,11 +136,11 @@ class APSVIZ_DB:
             self.logger.error(f'Error detected updating apsviz catalog workbench. {e}')
 
     # create a catalog for a new day, using the insert_catalog SP
-    def create_new_catalog(self, id, name, external, run_date, type="group"):
-        self.logger.info(f'APSVIZ_DB: Creating new catalog, id:{id} name:{name} external:{external} run_date:{run_date} type:{type}')
+    def create_new_catalog(self, run_date, name, external, cat_type="group"):
+        self.logger.info(f'APSVIZ_DB: Creating new catalog, name:{name} external:{external} run_date:{run_date} cat_type:{cat_type}')
 
         # first, lookup catalog type id
-        cat_type_id = self.get_catalog_type_id(type)
+        cat_type_id = self.get_catalog_type_id(cat_type)
 
         # now get the catalog base_id
         # for now just grab first one
@@ -155,15 +156,11 @@ class APSVIZ_DB:
     def add_cat_item(self, grid_type, event_type, run_date, instance_name, member_json):
         self.logger.info(f'APSVIZ_DB: Creating new catalog member, grid_type:{grid_type} event_type:{event_type} run_date:{run_date} instance_name:{instance_name}')
 
-        # first, lookup catalog type id
-        cat_type_id = self.get_catalog_type_id(type)
-
-        # now get the catalog base_id
-        # for now just grab first one
-        cat_base_id = self.get_catalog_base_id()
+        # convert json to a string for DB
+        member_str = json.dumps(member_json)
 
         # now add new catalog entry
         try:
-            self.cursor.callproc('insert_catalog', (cat_base_id, grid_type, event_type, run_date, instance_name, member_json))
+            self.cursor.callproc('insert_catalog_member', (run_date, grid_type, event_type, instance_name, run_date, member_str))
         except Exception as e:
-            self.logger.error(f'Error detected creating new catalog. {e}')
+            self.logger.error(f'Error detected creating new catalog member. {e}')
