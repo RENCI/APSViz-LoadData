@@ -168,7 +168,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
     store_name = str(instance_id) + "_station_props"
     dbname = "adcirc_obs"
     table_name = "stations"
-    style_name = "observations_style"
+    style_name = "observations_style_v2"
 
     logger.debug(f"csv_file_path: {csv_file_path} store name: {store_name}")
 
