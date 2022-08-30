@@ -152,9 +152,11 @@ class ASGS_DB:
                     logger.debug(f"opened csv file - saving this row to db: {row}")
                     filename = os.path.basename(row[6])
                     png_url = f"{host}/obs_pngs/{self.instanceId}/{filename}"
-                    sql_stmt = "INSERT INTO stations (stationid, stationname, state, lat, lon, node, filename, the_geom, instance_id, imageurl, type) VALUES (%s, %s, %s, %s, %s, %s, %s, ST_SetSRID(ST_MakePoint(%s, %s),4326), %s, %s, %s)"
-                    params = [row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[4], row[3], self.instanceId, png_url, row[7]]
-                    logger.debug(f"sql_stmt: {sql_stmt} params: {sql_stmt}")
+                    filename_list = os.path.splitext(filename)
+                    json_url = f"{host}/obs_pngs/{self.instanceId}/{filename_list[0]}.json"
+                    sql_stmt = "INSERT INTO stations (stationid, stationname, state, lat, lon, node, filename, the_geom, instance_id, imageurl, type, jsonurl) VALUES (%s, %s, %s, %s, %s, %s, %s, ST_SetSRID(ST_MakePoint(%s, %s),4326), %s, %s, %s, %s)"
+                    params = [row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[4], row[3], self.instanceId, png_url, row[7], json_url]
+                    logger.debug(f"sql_stmt: {sql_stmt} params: {params}")
                     self.cursor.execute(sql_stmt, params)
                 except (Exception):
                     self.conn.commit()

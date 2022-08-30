@@ -131,7 +131,8 @@ class APSVIZ_DB:
         self.logger.info(f'APSVIZ_DB: Updating workbench list: {workbench_list}')
 
         try:
-            self.cursor.callproc('update_catalog_workbench', [workbench_list, ])
+            json_wb = json.dumps(workbench_list)
+            self.cursor.callproc('update_catalog_workbench', [json_wb, ])
         except Exception as e:
             self.logger.error(f'Error detected updating apsviz catalog workbench. {e}')
 

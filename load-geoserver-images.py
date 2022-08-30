@@ -99,6 +99,8 @@ def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemo
             # add this layer to the wms layer group dict
             full_layername = f"{worksp}:{layer_name}"
             layergrp["wms"].append({"title": title, "layername": full_layername})
+        else:
+            return None
 
     return layergrp
 
@@ -182,7 +184,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
 
     # ... using pre-defined postgresql JNDI feature store in Geoserver
     ret = geo.create_jndi_featurestore(store_name, worksp, overwrite=False)
-    if ret is None: # sucessful
+    if ret is None: # successful
 
         # now publish this layer with an SQL filter based on instance_id
         sql = f"select * from stations where instance_id='{instance_id}'"
@@ -214,8 +216,33 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
 
     return layergrp
 
+# copy all .json station files to the fileserver host to serve them from there
+def copy_jsons(logger, geoserver_proj_path, instance_id, final_path):
 
-# copy all .png files to the geoserver host to serve them from there
+    from_path = f"{final_path}/insets/"
+    to_path = f"{geoserver_proj_path}/{instance_id}/"
+
+    logger.info(f"Copying insets .json files from: {from_path} to: {to_path}")
+
+    # first create new directory if not already existing
+    new_dir = f"{geoserver_proj_path}/{instance_id}"
+    logger.debug(f"copy_jsons: Creating to path directory: {new_dir}")
+
+    mkdir_cmd = f"mkdir -p {new_dir}"
+
+    logger.debug(f"copy_jsons: mkdir_cmd={mkdir_cmd}")
+    os.system(mkdir_cmd)
+
+    # now go through any .json files in the insets dir, if it exists
+    if (os.path.isdir(from_path)):
+        for file in fnmatch.filter(os.listdir(from_path), '*.json'):
+            from_file_path = from_path + file
+            to_file_path = to_path + file
+            logger.debug(f"Copying .json file from: {from_file_path}  to: {to_file_path}")
+            scp_cmd = f"cp {from_file_path} {to_file_path}"
+            os.system(scp_cmd)
+
+# copy all .png files to the fileserver host to serve them from there
 # if ssh_host is 'none' cp files to PV in k8s,
 # instead of using /projects mounted on the geoserver host
 def copy_pngs(logger, geoserver_host, ssh_userid, ssh_host, geoserver_proj_path, instance_id, final_path):
@@ -335,12 +362,17 @@ def main(args):
     # add a coverage store to geoserver for each .mbtiles found in the staging dir
     #new_layergrp = add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_path, layergrp)
     new_layergrp = add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemosaic_path, layergrp)
+    # if add image mosaic failed exit program with an error
+    if(new_layergrp is None):
+        logger.info("Error encountered while loading image mosaic into GeoServer - program exiting")
+        raise SystemExit()
 
     # now put NOAA OBS .csv file into geoserver
     final_layergrp = add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host, new_layergrp)
 
-    # finally copy all .png files to the geoserver host to serve them from there
+    # finally copy all .png & .json files to the fileserver host to serve them from there
     copy_pngs(logger, geoserver_host, ssh_userid, ssh_host, geoserver_proj_path, instance_id, final_path)
+    copy_jsons(logger, geoserver_proj_path, instance_id, final_path)
 
     # update TerriaMap data catalog
     tc = TerriaCatalog(data_directory, geoserver_host, ssh_userid, pswd)
