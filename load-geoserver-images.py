@@ -245,7 +245,7 @@ def copy_jsons(logger, geoserver_proj_path, instance_id, final_path):
 # copy all .png files to the fileserver host to serve them from there
 # if ssh_host is 'none' cp files to PV in k8s,
 # instead of using /projects mounted on the geoserver host
-def copy_pngs(logger, geoserver_host, ssh_userid, ssh_host, geoserver_proj_path, instance_id, final_path):
+def copy_pngs(logger, geoserver_host, geoserver_proj_path, instance_id, final_path):
 
     from_path = f"{final_path}/insets/"
 
@@ -279,9 +279,7 @@ def copy_pngs(logger, geoserver_host, ssh_userid, ssh_host, geoserver_proj_path,
             from_file_path = from_path + file
             to_file_path = to_path + file
             logger.debug(f"Copying .png file from: {from_file_path}  to: {to_file_path}")
-            scp_cmd = f'scp -r -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {from_file_path} {to_file_path}'
-            if (ssh_host == 'none'):
-                scp_cmd = f"cp {from_file_path} {to_file_path}"
+            scp_cmd = f"cp {from_file_path} {to_file_path}"
             os.system(scp_cmd)
 
     # also now pick up legend .png files in the tiff directory
@@ -291,9 +289,7 @@ def copy_pngs(logger, geoserver_host, ssh_userid, ssh_host, geoserver_proj_path,
             from_file_path = from_path + file
             to_file_path = to_path + file
             logger.debug(f"Copying .png file from: {from_file_path}  to: {to_file_path}")
-            scp_cmd = f'scp -r -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {from_file_path} {to_file_path}'
-            if (ssh_host == 'none'):
-                scp_cmd = f"cp {from_file_path} {to_file_path}"
+            scp_cmd = f"cp {from_file_path} {to_file_path}"
             os.system(scp_cmd)
 
 
