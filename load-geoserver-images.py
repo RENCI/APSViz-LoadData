@@ -337,8 +337,8 @@ def main(args):
     url = os.environ.get('GEOSERVER_URL', 'url').strip()
     worksp = os.environ.get('GEOSERVER_WORKSPACE', 'ADCIRC').strip()
     geoserver_host = os.environ.get('GEOSERVER_HOST', 'host.here.org').strip()
-    ssh_userid = os.environ.get('SSH_USERNAME', 'user').strip()
-    ssh_host = os.environ.get('SSH_HOST', 'none').strip()
+    #ssh_userid = os.environ.get('SSH_USERNAME', 'user').strip()
+    #ssh_host = os.environ.get('SSH_HOST', 'none').strip()
     geoserver_proj_path = os.environ.get('FILESERVER_OBS_PATH', '/obs_pngs').strip()
     logger.debug(f"Retrieved GeoServer env vars - url: {url} workspace: {worksp} geoserver_host: {geoserver_host} geoserver_proj_path: {geoserver_proj_path}")
 
@@ -371,15 +371,15 @@ def main(args):
     final_layergrp = add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host, new_layergrp)
 
     # finally copy all .png & .json files to the fileserver host to serve them from there
-    copy_pngs(logger, geoserver_host, ssh_userid, ssh_host, geoserver_proj_path, instance_id, final_path)
+    copy_pngs(logger, geoserver_host, geoserver_proj_path, instance_id, final_path)
     copy_jsons(logger, geoserver_proj_path, instance_id, final_path)
 
     # update TerriaMap data catalog
-    tc = TerriaCatalog(data_directory, geoserver_host, ssh_userid, pswd)
+    tc = TerriaCatalog(data_directory, geoserver_host, pswd)
     tc.update(final_layergrp)
 
     # save TerriaMap data catalog to DB
-    tc_db = TerriaCatalogDB(data_directory, geoserver_host, ssh_userid, pswd)
+    tc_db = TerriaCatalogDB(data_directory, geoserver_host, pswd)
     tc_db.update(final_layergrp)
 
     # geo.upload_style("./st.xml", "maxele_style", "ADCIRC_2022", sld_version='1.0.0', overwrite=False)

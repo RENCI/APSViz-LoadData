@@ -228,7 +228,7 @@ class TerriaCatalog:
 
 
 
-    def __init__(self, data_directory, host, userid, userpw):
+    def __init__(self, data_directory, host, userpw):
 
         # get the log level and directory from the environment
         log_level: int = int(os.getenv('LOG_LEVEL', logging.INFO))
@@ -245,7 +245,7 @@ class TerriaCatalog:
         # self.cat_url = cat_url
         self.data_directory = data_directory
         self.host = host
-        self.userid = userid
+        # self.userid = userid
         self.userpw = userpw
         self.fileserver_host = os.environ.get('FILESERVER_HOST', 'host.here.org').strip()
         self.cat_path = os.environ.get('FILESERVER_CAT_PATH', 'path').strip()
