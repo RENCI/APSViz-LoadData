@@ -101,6 +101,7 @@ class ASGS_DB:
             'currentcycle': '',
             'advisory': '',
             'forcing.stormname': '',
+            'forcing.metclass': '',
             'asgs.enstorm': '',
             'forcing.tropicalcyclone.stormname': '',
             'ADCIRCgrid': '',

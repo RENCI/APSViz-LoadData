@@ -226,6 +226,17 @@ class TerriaCatalog:
         ']' \
     '}'
 
+    cat_nhc_item = '{' \
+                   '"id": "Id",' \
+                   '"show": true,' \
+                   '"name": "Name",' \
+                   '"description": "This data is produced by the ADCIRC model and presented through the ADCIRC Prediction System Visualizer",' \
+                   '"dataCustodian": "RENCI",' \
+                   '"type": "wms",' \
+                   '"layers": "layers",' \
+                   '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms",' \
+                   '}'
+
 
 
     def __init__(self, data_directory, host, userpw):
@@ -583,6 +594,10 @@ class TerriaCatalog:
             if ("ec95d" in wfs_layer_dict["title"]):
                 # put this layer on top
                 latest_layer_ids.insert(0, item_id)
+        # do nhc storm layers if any
+        #for nhc_layer_dict in layergrp["nhc"]:
+            #item_id = self.add_wfs_item(nhc_layer_dict["title"], nhc_layer_dict["layername"])
+
 
         self.update_latest_results(latest_layer_ids)
 

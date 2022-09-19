@@ -47,7 +47,7 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name):
             run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
 
     title = "N/A"
-    if (meta_dict['forcing.stormname'] == 'NA'):
+    if (meta_dict['forcing.metclass'] == 'synoptic'):
         title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
     else:
         title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
@@ -201,7 +201,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
             date_list = [raw_date[i:i + 2] for i in range(0, len(raw_date), 2)]
             if len(date_list) == 3:
                 run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
-        if (meta_dict['forcing.stormname'] == 'NA'):
+        if (meta_dict['forcing.metclass'] == 'synoptic'):
             title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
         else:
             title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
@@ -215,6 +215,62 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
         layergrp["wfs"].append({"title": title, "layername": full_layername})
 
     return layergrp
+
+# This only needs to get called if the current run is for a tropical storm/cyclone or hurricane
+# It will look for shapefile layers, related to the storm, in /data/<instancename>/input/shapefiles
+# and create layers for them in GeoServer
+# expecting to find cone.zip, track.zip and points.zip
+def add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, layergrp):
+    logger.info(f"add_shapefile_datastores: instance_id: {instance_id} shp_path: {shp_path}")
+
+    new_layergrp = layergrp
+
+    # retrieve run.properties metadata fro this instance_id
+    db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
+    asgsdb = ASGS_DB(logger, db_name, instance_id)
+    meta_dict = asgsdb.getRunMetadata()
+
+    # now check to see if this is a tropical storm and only continue if it is
+    if (meta_dict['forcing.metclass'] == 'tropical'):
+        run_date = ''
+        raw_date = meta_dict['currentdate']
+        if raw_date:
+            # raw date format is YYMMDD
+            date_list = [raw_date[i:i + 2] for i in range(0, len(raw_date), 2)]
+            if len(date_list) == 3:
+                run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
+
+        # find shapefile .zip files in shp_path
+        try:
+            for file in fnmatch.filter(os.listdir(shp_path), '*.zip'):
+                param_name = os.path.splitext(file)[0]
+                layer_name = str(instance_id) + "_" + param_name
+                logger.info(f'Adding layer: {layer_name} into workspace: {worksp}')
+                ret = geo.create_shp_datastore(file, store_name=layer_name, workspace=worksp, file_format='shp')
+
+                if ret is None:  # successful
+                    # create a title for the TerriaMap data catalog
+                    title = f"Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']}  Instance: {meta_dict['instancename']} "
+                    if param_name == 'cone':
+                        title = "NHC: Cone of Uncertainty " + title
+                    elif param_name == 'points':
+                        title = "NHC: Forecast Points " + title
+                    elif param_name == 'track':
+                        title = "NHC: Forecast Track " + title
+                    else:
+                        title = "NHC: Unidentified Layer " + title
+
+                    logger.debug(f"setting this coverage: {layer_name} to {title}")
+                    full_layername = f"{worksp}:{layer_name}"
+                    new_layergrp["nhc"].append({"title": title, "layername": full_layername})
+        except:
+            e = sys.exc_info()[0]
+            logger.error(f"Error encountered while trying to create NHC shapefile layers in GeoServer: {e}")
+            return new_layergrp
+
+    logger.debug(f"add_shapefile_datastores: returning updated layer_grp: {new_layergrp}")
+    return new_layergrp
+
 
 # copy all .json station files to the fileserver host to serve them from there
 def copy_jsons(logger, geoserver_proj_path, instance_id, final_path):
@@ -306,7 +362,8 @@ def main(args):
     # arrays contain sub-dicts like this: {"title": "", "layername": ""}
     layergrp = {
                  "wms": [],
-                 "wfs": []
+                 "wfs": [],
+                 "nhc": []
                }
 
     # get the log level and directory from the environment
@@ -333,8 +390,6 @@ def main(args):
     url = os.environ.get('GEOSERVER_URL', 'url').strip()
     worksp = os.environ.get('GEOSERVER_WORKSPACE', 'ADCIRC').strip()
     geoserver_host = os.environ.get('GEOSERVER_HOST', 'host.here.org').strip()
-    #ssh_userid = os.environ.get('SSH_USERNAME', 'user').strip()
-    #ssh_host = os.environ.get('SSH_HOST', 'none').strip()
     geoserver_proj_path = os.environ.get('FILESERVER_OBS_PATH', '/obs_pngs').strip()
     logger.debug(f"Retrieved GeoServer env vars - url: {url} workspace: {worksp} geoserver_host: {geoserver_host} geoserver_proj_path: {geoserver_proj_path}")
 
@@ -351,9 +406,9 @@ def main(args):
     # final dir path needs to be well defined
     # dir structure looks like this: /data/<instance id>/mbtiles/<parameter name>.<zoom level>.mbtiles
     final_path = f"{data_directory}/{instance_id}/final"
-    mbtiles_path = final_path + "/mbtiles"
+    #mbtiles_path = final_path + "/mbtiles"
     imagemosaic_path = final_path + "/cogeo"
-
+    shp_path = final_path + "/shapefiles"
 
     # add a coverage store to geoserver for each .mbtiles found in the staging dir
     #new_layergrp = add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_path, layergrp)
@@ -364,7 +419,13 @@ def main(args):
         raise SystemExit()
 
     # now put NOAA OBS .csv file into geoserver
-    final_layergrp = add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host, new_layergrp)
+    next_layergrp = add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host, new_layergrp)
+    if (new_layergrp is None):
+        logger.info("Error encountered while loading noaa observation layer into GeoServer - program exiting")
+        raise SystemExit()
+
+    # check to see if this is a tropical storm, and if so, add storm related shapefiles to GeoServer
+    final_layergrp = add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, next_layergrp)
 
     # finally copy all .png & .json files to the fileserver host to serve them from there
     copy_pngs(logger, geoserver_host, geoserver_proj_path, instance_id, final_path)
