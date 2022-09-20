@@ -185,8 +185,8 @@ class TerriaCatalogDB:
          '"name": "Name",' \
          '"description": "This data is provided by the National Hurricame Center",' \
          '"dataCustodian": "NHC",' \
-         '"type": "wfs",' \
-         '"typeNames": "layers",' \
+         '"type": "wms",' \
+         '"layers": "layers",' \
          '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms"' \
      '}'
 
@@ -417,7 +417,7 @@ class TerriaCatalogDB:
         nhc_item["id"] = item_id
         nhc_item["show"] = show
         nhc_item["name"] = name
-        nhc_item["typeNames"] = type_names
+        nhc_item["layers"] = type_names
         nhc_item["url"] = url
 
         return nhc_item
