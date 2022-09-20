@@ -257,12 +257,12 @@ def add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, layergr
                     with ZipFile(zip_path, 'r') as zipObj:
                         # Get list of files names in zip
                         listOfiles = zipObj.namelist()
-                        print(listOfiles)
                         if listOfiles is not None:
                             layer_name = listOfiles[0].split(".")[0]
 
                     # create a title for the TerriaMap data catalog
-                    title = f"- Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']}  Instance: {meta_dict['instancename']} "
+                    advisory = layer_name.split("-")[1].split("_")[0]
+                    title = f"- Date:{run_date} Storm Name:{meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{advisory}  Instance:{meta_dict['instancename']} "
                     if param_name == 'cone':
                         title = "NHC: Cone of Uncertainty " + title
                     elif param_name == 'points':

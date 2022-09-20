@@ -227,15 +227,15 @@ class TerriaCatalog:
     '}'
 
     cat_nhc_item = '{' \
-                   '"id": "Id",' \
-                   '"show": true,' \
-                   '"name": "Name",' \
-                   '"description": "This data is provided by the National Hurricame Center,' \
-                   '"dataCustodian": "NHC",' \
-                   '"type": "wfs",' \
-                   '"typeNames": "layers",' \
-                   '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms",' \
-                   '}'
+        '"id": "Id",' \
+        '"show": true,' \
+        '"name": "Name",' \
+        '"description": "This data is provided by the National Hurricame Center",' \
+        '"dataCustodian": "NHC",' \
+        '"type": "wfs",' \
+        '"typeNames": "layers",' \
+        '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms"' \
+    '}'
 
 
 
@@ -324,12 +324,15 @@ class TerriaCatalog:
             tmp = str1[2].split('_')
             str1 = tmp[1].split('.')
             id_pc2 = str1[0]
-        else:
+        elif (type == "wfs"):
             id_pc2 = "obs"
+        else: # NHC
+            id_pc2 = "nhc"
 
         item_id = f"{id_pc1}-{id_pc2}"
 
         return item_id
+
     # need date in format MM-DD-YYYY
     # layername look like this: ADCIRC_2021:4014-2022050218-namforecast_maxele.63.0.10
     def get_datestr_from_layername(self, layername):
@@ -479,7 +482,7 @@ class TerriaCatalog:
         nhc_item["id"] = item_id
         nhc_item["show"] = show
         nhc_item["name"] = name
-        nhc_item["type_names"] = type_names
+        nhc_item["typeNames"] = type_names
         nhc_item["url"] = url
 
         return nhc_item
@@ -601,7 +604,7 @@ class TerriaCatalog:
 
         new_group = False
 
-        item_id = self.create_cat_itemid(typeNames, "wfs")
+        item_id = self.create_cat_itemid(typeNames, "nhc")
         if (url is None):
             url = f"{self.geoserver_url}/{self.geo_workspace}/wfs/{self.geo_workspace}?service=wfs&version=1.3.0&request=GetCapabilities"
         self.logger.debug(f'url: {url}')
@@ -636,7 +639,11 @@ class TerriaCatalog:
         # make array to save latest results maxele layer and noaa obs layer
         latest_layer_ids = []
 
-        # first take care of the WMS layers
+        # do nhc storm layers if any
+        for nhc_layer_dict in layergrp["nhc"]:
+            item_id = self.add_nhc_item(nhc_layer_dict["title"], nhc_layer_dict["layername"])
+
+        # now take care of the WMS layers
         for wms_layer_dict in layergrp["wms"]:
             item_id = self.add_wms_item(wms_layer_dict["title"], wms_layer_dict["layername"])
             if (("maxele" in wms_layer_dict["layername"]) and ("ec95d" in wms_layer_dict["title"])):
@@ -647,10 +654,6 @@ class TerriaCatalog:
             if ("ec95d" in wfs_layer_dict["title"]):
                 # put this layer on top
                 latest_layer_ids.insert(0, item_id)
-        # do nhc storm layers if any
-        for nhc_layer_dict in layergrp["nhc"]:
-            item_id = self.add_nhc_item(nhc_layer_dict["title"], nhc_layer_dict["layername"])
-
 
         self.update_latest_results(latest_layer_ids)
 

@@ -179,6 +179,16 @@ class TerriaCatalogDB:
         ']' \
     '}'
 
+    cat_nhc_item = '{' \
+         '"id": "Id",' \
+         '"show": true,' \
+         '"name": "Name",' \
+         '"description": "This data is provided by the National Hurricame Center",' \
+         '"dataCustodian": "NHC",' \
+         '"type": "wfs",' \
+         '"typeNames": "layers",' \
+         '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms"' \
+     '}'
 
 
     def __init__(self, data_directory, host, userpw):
@@ -251,12 +261,15 @@ class TerriaCatalogDB:
             tmp = str1[2].split('_')
             str1 = tmp[1].split('.')
             id_pc2 = str1[0]
-        else:
+        elif (type == "wfs"):
             id_pc2 = "obs"
+        else:  # NHC
+            id_pc2 = "nhc"
 
         item_id = f"{id_pc1}-{id_pc2}"
 
         return item_id
+
     # need date in format MM-DD-YYYY
     # layername look like this: ADCIRC_2021:4014-2022050218-namforecast_maxele.63.0.10
     def get_datestr_from_layername(self, layername):
@@ -393,6 +406,22 @@ class TerriaCatalogDB:
 
         return wfs_item
 
+    def create_nhc_data_item(self,
+                             item_id,
+                             show,
+                             name,
+                             type_names,
+                             url):
+        nhc_item = {}
+        nhc_item = json.loads(self.cat_nhc_item)
+        nhc_item["id"] = item_id
+        nhc_item["show"] = show
+        nhc_item["name"] = name
+        nhc_item["typeNames"] = type_names
+        nhc_item["url"] = url
+
+        return nhc_item
+
     # remove any groups 14 days older than the newest one
     def rm_oldest_groups(self):
         new_group_list = []
@@ -467,8 +496,6 @@ class TerriaCatalogDB:
                     url=None,
                     show=True):
 
-        new_group = False
-
         item_id = self.create_cat_itemid(typeNames, "wfs")
         if (url is None):
             url = f"{self.geoserver_url}/{self.geo_workspace}/wfs/{self.geo_workspace}?service=wfs&version=1.3.0&request=GetCapabilities"
@@ -495,6 +522,35 @@ class TerriaCatalogDB:
 
         return item_id
 
+    # put the newest items at the top and only show the last 5 runs - not possible?
+    # group is an ENUM - i.e. CatalogGroup.RECENT
+    def add_nhc_item(self,
+                     name,
+                     typeNames,
+                     url=None,
+                     show=True):
+
+        item_id = self.create_cat_itemid(typeNames, "nhc")
+        if (url is None):
+            url = f"{self.geoserver_url}/{self.geo_workspace}/wfs/{self.geo_workspace}?service=wfs&version=1.3.0&request=GetCapabilities"
+        self.logger.debug(f'url: {url}')
+
+        # add this item to the CURRENT date group in the catalog, create/add to current date group, if it does not exist
+        cat_group = self.cat_json['catalog'][0]
+        date_str = self.get_datestr_from_title(name)
+        # check to see if this catalog group already exists
+        if (not self.apsviz_db.find_cat_group(date_str)):
+            # create new group
+            self.create_cat_group(date_str)
+
+        cat_item_list = cat_group["members"]
+
+        nhc_item = self.create_nhc_data_item(item_id, show, name, typeNames, url)
+        #self.apsviz_db.add_cat_item(grid_type, event_type, run_date, instance_name, wfs_item)
+        self.apsviz_db.add_cat_item("NA", "NA", "NA", "NA", nhc_item)
+
+        return item_id
+
 
     # update the TerriaMap data catalog with a list of wms and wfs layers
     # layergrp looks like this: {'wms': [{'layername': '', 'title': ''}], 'wfs': [{'layername': '', 'title': ''}]}
@@ -503,7 +559,11 @@ class TerriaCatalogDB:
         # make array to save latest results maxele layer and noaa obs layer
         latest_layer_ids = []
 
-        # first take care of the WMS layers
+        # do nhc storm layers if any
+        for nhc_layer_dict in layergrp["nhc"]:
+            item_id = self.add_nhc_item(nhc_layer_dict["title"], nhc_layer_dict["layername"])
+
+        # next take care of the WMS layers
         for wms_layer_dict in layergrp["wms"]:
             item_id = self.add_wms_item(wms_layer_dict["title"], wms_layer_dict["layername"])
             if (("maxele" in wms_layer_dict["layername"]) and ("ec95d" in wms_layer_dict["title"])):
