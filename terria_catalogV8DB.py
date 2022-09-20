@@ -544,7 +544,7 @@ class TerriaCatalogDB:
 
         nhc_item = self.create_nhc_data_item(item_id, show, name, typeNames, url)
         #self.apsviz_db.add_cat_item(grid_type, event_type, run_date, instance_name, wfs_item)
-        self.apsviz_db.add_cat_item("NA", "NA", "date_str", "NA", nhc_item)
+        self.apsviz_db.add_cat_item("NA", "NA", date_str, "NA", nhc_item)
 
         return item_id
 
