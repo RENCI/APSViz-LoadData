@@ -535,19 +535,16 @@ class TerriaCatalogDB:
             url = f"{self.geoserver_url}/{self.geo_workspace}/wfs/{self.geo_workspace}?service=wfs&version=1.3.0&request=GetCapabilities"
         self.logger.debug(f'url: {url}')
 
-        # add this item to the CURRENT date group in the catalog, create/add to current date group, if it does not exist
-        cat_group = self.cat_json['catalog'][0]
+        # add to correct catalog date group, if that group does not exist, create a new one
         date_str = self.get_datestr_from_title(name)
         # check to see if this catalog group already exists
         if (not self.apsviz_db.find_cat_group(date_str)):
             # create new group
             self.create_cat_group(date_str)
 
-        cat_item_list = cat_group["members"]
-
         nhc_item = self.create_nhc_data_item(item_id, show, name, typeNames, url)
         #self.apsviz_db.add_cat_item(grid_type, event_type, run_date, instance_name, wfs_item)
-        self.apsviz_db.add_cat_item("NA", "NA", "NA", "NA", nhc_item)
+        self.apsviz_db.add_cat_item("NA", "NA", "date_str", "NA", nhc_item)
 
         return item_id
 

@@ -242,6 +242,7 @@ def add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, layergr
                 run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
 
         # find shapefile .zip files in shp_path
+        print(run_date)
         try:
             for file in fnmatch.filter(os.listdir(shp_path), '*.zip'):
                 param_name = os.path.splitext(file)[0]
@@ -262,7 +263,7 @@ def add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, layergr
 
                     # create a title for the TerriaMap data catalog
                     advisory = layer_name.split("-")[1].split("_")[0]
-                    title = f"- Date:{run_date} Storm Name:{meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{advisory}  Instance:{meta_dict['instancename']} "
+                    title = f"- Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory: {advisory}  Instance: {meta_dict['instancename']} "
                     if param_name == 'cone':
                         title = "NHC: Cone of Uncertainty " + title
                     elif param_name == 'points':
