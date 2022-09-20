@@ -588,7 +588,7 @@ class TerriaCatalog:
 
         # put this item list back into main catalog
         if (new_group):
-            self.cat_json.insert(0, cat_group)
+            self.cat_json["catalog"].insert(0, cat_group)
         else:
             self.cat_json["catalog"][0] = cat_group
 
@@ -618,14 +618,14 @@ class TerriaCatalog:
             cat_group = self.create_cat_group(date_str)
 
         cat_item_list = cat_group["members"]
-
         nhc_item = self.create_nhc_data_item(item_id, show, name, typeNames, url)
+
         cat_item_list.insert(0, nhc_item)
         cat_group["members"] = cat_item_list
 
         # put this item list back into main catalog
         if (new_group):
-            self.cat_json.insert(0, cat_group)
+            self.cat_json["catalog"].insert(0, cat_group)
         else:
             self.cat_json["catalog"][0] = cat_group
 
