@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 from terria_catalogV8 import TerriaCatalog
 from terria_catalogV8DB import TerriaCatalogDB
 from asgs_db import ASGS_DB
+from zipfile import ZipFile
 
  # create a new workspace in geoserver if it does not already exist
 def add_workspace(logger, geo, worksp):
@@ -244,13 +245,24 @@ def add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, layergr
         try:
             for file in fnmatch.filter(os.listdir(shp_path), '*.zip'):
                 param_name = os.path.splitext(file)[0]
-                layer_name = str(instance_id) + "_" + param_name
-                logger.info(f'Adding layer: {layer_name} into workspace: {worksp}')
-                ret = geo.create_shp_datastore(file, store_name=layer_name, workspace=worksp, file_format='shp')
+                store_name = str(instance_id) + "_" + param_name
+                zip_path = os.path.join(shp_path, file)
+                logger.info(f'Adding layer: {store_name} into workspace: {worksp}')
+                ret = geo.create_shp_datastore(zip_path, store_name=store_name, workspace=worksp, file_format='shp')
 
-                if ret is None:  # successful
+                if "successfully" in ret:  # successful
+
+                    # get the filenames in the zip file to use as layer name
+                    layer_name = ""
+                    with ZipFile(zip_path, 'r') as zipObj:
+                        # Get list of files names in zip
+                        listOfiles = zipObj.namelist()
+                        print(listOfiles)
+                        if listOfiles is not None:
+                            layer_name = listOfiles[0].split(".")[0]
+
                     # create a title for the TerriaMap data catalog
-                    title = f"Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']}  Instance: {meta_dict['instancename']} "
+                    title = f"- Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']}  Instance: {meta_dict['instancename']} "
                     if param_name == 'cone':
                         title = "NHC: Cone of Uncertainty " + title
                     elif param_name == 'points':
@@ -408,7 +420,7 @@ def main(args):
     final_path = f"{data_directory}/{instance_id}/final"
     #mbtiles_path = final_path + "/mbtiles"
     imagemosaic_path = final_path + "/cogeo"
-    shp_path = final_path + "/shapefiles"
+    shp_path = f"{data_directory}/{instance_id}/input/shapefiles"
 
     # add a coverage store to geoserver for each .mbtiles found in the staging dir
     #new_layergrp = add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_path, layergrp)
