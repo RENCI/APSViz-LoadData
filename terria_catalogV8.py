@@ -591,42 +591,42 @@ class TerriaCatalog:
 
         return item_id
 
-        # put the newest items at the top and only show the last 5 runs - not possible?
-        # group is an ENUM - i.e. CatalogGroup.RECENT
-        def add_nhc_item(self,
-                         name,
-                         typeNames,
-                         url=None,
-                         show=True):
+    # put the newest items at the top and only show the last 5 runs - not possible?
+    # group is an ENUM - i.e. CatalogGroup.RECENT
+    def add_nhc_item(self,
+                     name,
+                     typeNames,
+                     url=None,
+                     show=True):
 
-            new_group = False
+        new_group = False
 
-            item_id = self.create_cat_itemid(typeNames, "wfs")
-            if (url is None):
-                url = f"{self.geoserver_url}/{self.geo_workspace}/wfs/{self.geo_workspace}?service=wfs&version=1.3.0&request=GetCapabilities"
-            self.logger.debug(f'url: {url}')
+        item_id = self.create_cat_itemid(typeNames, "wfs")
+        if (url is None):
+            url = f"{self.geoserver_url}/{self.geo_workspace}/wfs/{self.geo_workspace}?service=wfs&version=1.3.0&request=GetCapabilities"
+        self.logger.debug(f'url: {url}')
 
-            # add this item to the CURRENT date group in the catalog, create/add to current date group, if it does not exist
-            cat_group = self.cat_json['catalog'][0]
-            date_str = self.get_datestr_from_title(name)
-            if (date_str not in cat_group["name"]):
-                # create new group
-                new_group = True
-                cat_group = self.create_cat_group(date_str)
+        # add this item to the CURRENT date group in the catalog, create/add to current date group, if it does not exist
+        cat_group = self.cat_json['catalog'][0]
+        date_str = self.get_datestr_from_title(name)
+        if (date_str not in cat_group["name"]):
+            # create new group
+            new_group = True
+            cat_group = self.create_cat_group(date_str)
 
-            cat_item_list = cat_group["members"]
+        cat_item_list = cat_group["members"]
 
-            nhc_item = self.create_nhc_data_item(item_id, show, name, typeNames, url)
-            cat_item_list.insert(0, nhc_item)
-            cat_group["members"] = cat_item_list
+        nhc_item = self.create_nhc_data_item(item_id, show, name, typeNames, url)
+        cat_item_list.insert(0, nhc_item)
+        cat_group["members"] = cat_item_list
 
-            # put this item list back into main catalog
-            if (new_group):
-                self.cat_json.insert(0, cat_group)
-            else:
-                self.cat_json["catalog"][0] = cat_group
+        # put this item list back into main catalog
+        if (new_group):
+            self.cat_json.insert(0, cat_group)
+        else:
+            self.cat_json["catalog"][0] = cat_group
 
-            return item_id
+        return item_id
 
 
     # update the TerriaMap data catalog with a list of wms and wfs layers
