@@ -230,10 +230,10 @@ class TerriaCatalog:
                    '"id": "Id",' \
                    '"show": true,' \
                    '"name": "Name",' \
-                   '"description": "This data is produced by the ADCIRC model and presented through the ADCIRC Prediction System Visualizer",' \
-                   '"dataCustodian": "RENCI",' \
-                   '"type": "wms",' \
-                   '"layers": "layers",' \
+                   '"description": "This data is provided by the National Hurricame Center,' \
+                   '"dataCustodian": "NHC",' \
+                   '"type": "wfs",' \
+                   '"typeNames": "layers",' \
                    '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms",' \
                    '}'
 
@@ -468,6 +468,22 @@ class TerriaCatalog:
 
         return wfs_item
 
+    def create_nhc_data_item(self,
+                             item_id,
+                             show,
+                             name,
+                             type_names,
+                             url):
+        nhc_item = {}
+        nhc_item = json.loads(self.cat_nhc_item)
+        nhc_item["id"] = item_id
+        nhc_item["show"] = show
+        nhc_item["name"] = name
+        nhc_item["type_names"] = type_names
+        nhc_item["url"] = url
+
+        return nhc_item
+
     # remove any groups 14 days older than the newest one
     def rm_oldest_groups(self):
         new_group_list = []
@@ -575,6 +591,43 @@ class TerriaCatalog:
 
         return item_id
 
+        # put the newest items at the top and only show the last 5 runs - not possible?
+        # group is an ENUM - i.e. CatalogGroup.RECENT
+        def add_nhc_item(self,
+                         name,
+                         typeNames,
+                         url=None,
+                         show=True):
+
+            new_group = False
+
+            item_id = self.create_cat_itemid(typeNames, "wfs")
+            if (url is None):
+                url = f"{self.geoserver_url}/{self.geo_workspace}/wfs/{self.geo_workspace}?service=wfs&version=1.3.0&request=GetCapabilities"
+            self.logger.debug(f'url: {url}')
+
+            # add this item to the CURRENT date group in the catalog, create/add to current date group, if it does not exist
+            cat_group = self.cat_json['catalog'][0]
+            date_str = self.get_datestr_from_title(name)
+            if (date_str not in cat_group["name"]):
+                # create new group
+                new_group = True
+                cat_group = self.create_cat_group(date_str)
+
+            cat_item_list = cat_group["members"]
+
+            nhc_item = self.create_nhc_data_item(item_id, show, name, typeNames, url)
+            cat_item_list.insert(0, nhc_item)
+            cat_group["members"] = cat_item_list
+
+            # put this item list back into main catalog
+            if (new_group):
+                self.cat_json.insert(0, cat_group)
+            else:
+                self.cat_json["catalog"][0] = cat_group
+
+            return item_id
+
 
     # update the TerriaMap data catalog with a list of wms and wfs layers
     # layergrp looks like this: {'wms': [{'layername': '', 'title': ''}], 'wfs': [{'layername': '', 'title': ''}]}
@@ -595,8 +648,8 @@ class TerriaCatalog:
                 # put this layer on top
                 latest_layer_ids.insert(0, item_id)
         # do nhc storm layers if any
-        #for nhc_layer_dict in layergrp["nhc"]:
-            #item_id = self.add_wfs_item(nhc_layer_dict["title"], nhc_layer_dict["layername"])
+        for nhc_layer_dict in layergrp["nhc"]:
+            item_id = self.add_nhc_item(nhc_layer_dict["title"], nhc_layer_dict["layername"])
 
 
         self.update_latest_results(latest_layer_ids)
