@@ -273,6 +273,11 @@ def add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, layergr
                     else:
                         title = "NHC: Unidentified Layer " + title
 
+                    # now set the default style
+                    style_name = f"storm_{param_name}_style"
+                    logger.debug(f"setting style for layer {layer_name} to {style_name}")
+                    geo.set_default_style(worksp, layer_name, style_name)
+
                     logger.debug(f"setting this coverage: {layer_name} to {title}")
                     full_layername = f"{worksp}:{layer_name}"
                     new_layergrp["nhc"].append({"title": title, "layername": full_layername})
