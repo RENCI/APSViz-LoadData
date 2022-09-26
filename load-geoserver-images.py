@@ -7,164 +7,15 @@
 import os, sys
 import fnmatch
 import logging
-import psycopg2
-import csv
 
 from geo.Geoserver import Geoserver
 from geoserver.catalog import Catalog
 from common.logging import LoggingUtil
 from urllib.parse import urlparse
-from terria_catalog import TerriaCatalog
-
-class asgsDB:
-
-    # dbname looks like this: 'asgs_dashboard'
-    # instance_id looks like this: '2744-2021050618-namforecast'
-    def __init__(self, logger, dbname, instance_id):
-        self.conn = None
-        self.logger = logger
-
-        self.user = os.getenv('ASGS_DB_USERNAME', 'user').strip()
-        self.pswd = os.getenv('ASGS_DB_PASSWORD', 'password').strip()
-        self.host = os.getenv('ASGS_DB_HOST', 'host').strip()
-        self.port = os.getenv('ASGS_DB_PORT', '5432').strip()
-        # self.db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-        self.db_name = dbname
-
-        # save whole Id
-        self.instanceId = instance_id
-        self.uid = instance_id
-        self.instance = instance_id
-
-        # also save separate parts i.e. '2744' and '2021050618-namforecast'
-        parts = instance_id.split("-", 1)
-        if (len(parts) > 1):
-            self.instance = parts[0]
-            self.uid = parts[1]
-
-        try:
-            # connect to asgs database
-            conn_str = f'host={self.host} port={self.port} dbname={self.db_name} user={self.user} password={self.pswd}'
-
-            self.conn = psycopg2.connect(conn_str)
-            self.conn.set_session(autocommit=True)
-            self.cursor = self.conn.cursor()
-        except:
-            e = sys.exc_info()[0]
-            self.logger.error(f"FAILURE - Cannot connect to ASGS_DB. error {e}")
-
-    def __del__(self):
-        """
-            close up the DB
-            :return:
-        """
-        try:
-            if self.cursor is not None:
-                self.cursor.close()
-            if self.conn is not None:
-                self.conn.close()
-        except Exception as e:
-            self.logger.error(f'Error detected closing cursor or connection. {e}')
-            #sys.exc_info()[0]
-
-    def get_user(self):
-        return self.user
-
-    def get_password(self):
-        return self.pswd
-
-    def get_host(self):
-        return self.host
-
-    def get_port(self):
-        return self.port
-
-    def get_dbname(self):
-        return self.db_name
-
-
-    # given instance id - save geoserver url (to access this mbtiles layer) in the asgs database
-    def saveImageURL(self, name, url):
-        self.logger.info(f'Updating DB record - instance id: {self.instance}  uid: {self.uid} with url: {url}')
-
-        # format of mbtiles is ex: maxele.63.0.9.mbtiles
-        # final key value will be in this format image.maxele.63.0.9
-        key_name = "image." + os.path.splitext(name)[0]
-        key_value = url
-
-        try:
-            sql_stmt = 'INSERT INTO "ASGS_Mon_config_item" (key, value, instance_id, uid) VALUES(%s, %s, %s, %s)'
-            params = [f"{key_name}", f"{key_value}", self.instance, f"{self.uid}"]
-            self.logger.debug(f"sql statement is: {sql_stmt} params are: {params}")
-
-            self.cursor.execute(sql_stmt, params)
-        except:
-            e = sys.exc_info()[0]
-            self.logger.error(f"FAILURE - Cannot update ASGS_DB. error {e}")
-
-    # need to retrieve some values - related to this run - from the ASGS DB
-    # currently: Date, Cycle, Storm Name (if any), and Advisory (if any)
-    # if more are needed, add to metadata_dict
-    def getRunMetadata(self):
-        metadata_dict = {
-            'currentdate': '',
-            'currentcycle': '',
-            'advisory': '',
-            'forcing.stormname': '',
-            'asgs.enstorm': '',
-            'ADCIRCgrid': ''
-        }
-        self.logger.info(f'Retrieving DB record metadata - instance id: {self.instance} uid: {self.uid}')
-
-        try:
-            for key in metadata_dict.keys():
-                sql_stmt = 'SELECT value FROM "ASGS_Mon_config_item" WHERE instance_id=%s AND uid=%s AND key=%s'
-                params = [self.instance, self.uid, key]
-                self.logger.debug(f"sql statement is: {sql_stmt} params are: {params}")
-                self.cursor.execute(sql_stmt, params)
-                ret = self.cursor.fetchone()
-                if ret:
-                    self.logger.debug(f"value returned is: {ret}")
-                    metadata_dict[key] = ret[0]
-        except:
-             e = sys.exc_info()[0]
-             self.logger.error(f"FAILURE - Cannot retrieve run properties metadata from ASGS_DB. error {e}")
-        finally:
-            return metadata_dict
-
-    # find the stationProps.csv file and insert the contents
-    # into the adcirc_obs db of the ASGS postgres instance
-    def insert_station_props(self, logger, geo, worksp, csv_file_path, geoserver_host):
-        # where to find the stationProps.csv file
-        logger.info(f"Saving {csv_file_path} to DB")
-        logger.debug(f"DB name is: {self.get_dbname()}")
-
-        # need to remove the .edc from the geoserver_host for now
-        host = geoserver_host.replace('.edc', '')
-
-        # open the stationProps.csv file and save in db
-        # must create the_geom from lat, lon provided in csv file
-        # also add to instance id column
-        # and finally, create an url where the obs chart for each station can be accessed
-        #try: catch this exception in calling program instead
-        with open(csv_file_path, 'r') as f:
-            reader = csv.reader(f)
-            next(reader)  # Skip the header row.
-            for row in reader:
-                logger.debug(f"opened csv file - saving this row to db: {row}")
-                png_url = f"https://{host}/obs_pngs/{self.instanceId}/{row[6]}"
-                sql_stmt = "INSERT INTO stations (stationid, stationname, state, lat, lon, node, filename, the_geom, instance_id, imageurl) VALUES (%s, %s, %s, %s, %s, %s, %s, ST_SetSRID(ST_MakePoint(%s, %s),4326), %s, %s)"
-                params = [row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[4], row[3], self.instanceId, png_url]
-                logger.debug(f"sql_stmt: {sql_stmt} params: {sql_stmt}")
-                self.cursor.execute(sql_stmt, params)
-
-        self.conn.commit()
-        #except:
-            #e = sys.exc_info()[0]
-            #self.logger.error(f"FAILURE - Cannot save run properties in ASGS_DB. error {e}")
-
-
-
+from terria_catalogV8 import TerriaCatalog
+from terria_catalogV8DB import TerriaCatalogDB
+from asgs_db import ASGS_DB
+from zipfile import ZipFile
 
  # create a new workspace in geoserver if it does not already exist
 def add_workspace(logger, geo, worksp):
@@ -172,6 +23,20 @@ def add_workspace(logger, geo, worksp):
     if (geo.get_workspace(worksp) is None):
         geo.create_workspace(workspace=worksp)
 
+# upload raster layer styles, unless they already exist
+def upload_styles(logger, geo):
+    # find all styles in styles dir
+    styles = os.listdir("./styles")
+
+    # for each one check and see if they already exist in GeoServer
+    for style in styles:
+        style_name = os.path.splitext(style)[0]
+
+        # check to see if style exists
+        if geo.get_style(style_name) is None:
+            # doesn't exist - upload
+            logger.info(f"uploading style: {style_name}")
+            geo.upload_style(f"./styles/{style}")
 
 # tweak the layer title to make it more readable in Terria Map
 def update_layer_title(logger, geo, instance_id, worksp, layer_name):
@@ -179,7 +44,7 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name):
     run_date = ''
     # first get metadata from this model run
     db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-    asgsdb = asgsDB(logger, db_name, instance_id)
+    asgsdb = ASGS_DB(logger, db_name, instance_id)
     meta_dict = asgsdb.getRunMetadata()
     raw_date = meta_dict['currentdate']
     if raw_date:
@@ -189,10 +54,10 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name):
             run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
 
     title = "N/A"
-    if (meta_dict['forcing.stormname'] == 'NA'):
-        title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['asgs.enstorm']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
+    if (meta_dict['forcing.metclass'] == 'synoptic'):
+        title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
     else:
-        title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.stormname']}:{meta_dict['asgs.enstorm']} Advisory:{meta_dict['advisory']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
+        title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
     logger.debug(f"setting this coverage: {layer_name} to {title}")
 
     geo.set_coverage_title(worksp, layer_name, layer_name, title)
@@ -200,12 +65,59 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name):
     return title
 
 
+def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemosaic_path, layergrp):
+    # format of mbtiles is ex: maxele.63.0.9.mbtiles
+    # pull out meaningful pieces of file name
+    # get all files in mbtiles dir and loop through
+    logger.info(f"instance_id: {instance_id} imagemosaic_path: {imagemosaic_path}")
+
+    for file in fnmatch.filter(os.listdir(imagemosaic_path), '*.zip'):
+        file_path = f"{imagemosaic_path}/{file}"
+        logger.debug(f"add_imagemosaic_coveragestores: file={file_path}")
+        layer_name = str(instance_id) + "_" + os.path.splitext(file)[0]
+        logger.info(f'Adding layer: {layer_name} into workspace: {worksp}')
+
+        # create coverage store and associate with .mbtiles file
+        # also creates layer
+        ret = geo.create_imagemosaic(lyr_name=layer_name,
+                                       path=file_path,
+                                       workspace=worksp)
+        logger.debug(f"Attempted to add imagemosaic coverage store, file path: {file_path}  return value: {ret}")
+        if (ret is None):  # coverage store successfully created
+
+            # now we just need to tweak the layer title to make it more
+            # readable in Terria Map
+            title = update_layer_title(logger, geo, instance_id, worksp, layer_name)
+
+            # set the default style for this layer
+            if "swan" in layer_name:
+                style_name = f"{layer_name.split('_')[1]}_style"
+            else:
+                style_name = f"{layer_name.split('_')[1][:-2]}_style"
+            geo.set_default_style(worksp, layer_name, style_name)
+
+            # update DB with url of layer for access from website NEED INSTANCE ID for this
+            layer_url = f'{url}/{worksp}/wcs?service=WCS&version=1.1.1&request=DescribeCoverage&identifiers={worksp}:{layer_name}'
+            logger.debug(f"Adding coverage store to DB, instanceId: {instance_id} coveragestore url: {layer_url}")
+            db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
+            asgsdb = ASGS_DB(logger, db_name, instance_id)
+            asgsdb.saveImageURL(file, layer_url)
+
+            # add this layer to the wms layer group dict
+            full_layername = f"{worksp}:{layer_name}"
+            layergrp["wms"].append({"title": title, "layername": full_layername})
+        else:
+            return None
+
+    return layergrp
+
 # add a coverage store to geoserver for each .mbtiles found in the staging dir
 def add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_path, layergrp):
     # format of mbtiles is ex: maxele.63.0.9.mbtiles
     # pull out meaningful pieces of file name
     # get all files in mbtiles dir and loop through
     logger.info(f"instance_id: {instance_id} mbtiles_path: {mbtiles_path}")
+
     for file in fnmatch.filter(os.listdir(mbtiles_path), '*.mbtiles'):
         file_path = f"{mbtiles_path}/{file}"
         logger.debug(f"add_mbtiles_coveragestores: file={file_path}")
@@ -228,10 +140,10 @@ def add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_pa
             title = update_layer_title(logger, geo, instance_id, worksp, layer_name)
 
             # update DB with url of layer for access from website NEED INSTANCE ID for this
-            layer_url = f'{url}rest/workspaces/{worksp}/coveragestores/{layer_name}.json'
+            layer_url = f'{url}/{worksp}/wcs?service=WCS&version=1.1.1&request=DescribeCoverage&identifiers={worksp}:{layer_name}'
             logger.debug(f"Adding coverage store to DB, instanceId: {instance_id} coveragestore url: {layer_url}")
             db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-            asgsdb = asgsDB(logger, db_name, instance_id)
+            asgsdb = ASGS_DB(logger, db_name, instance_id)
             asgsdb.saveImageURL(file, layer_url)
 
             # add this layer to the wms layer group dict
@@ -241,17 +153,17 @@ def add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_pa
     return layergrp
 
 
-
 # add a datastore in geoserver for the stationProps.csv file
 # as of 4/8/21 this feature is broken in GeoServer so going to
 # add a DB datastore for this data
-#def add_props_datastore(logger, geo, instance_id, worksp, final_path):
+'''
+def add_props_datastore(logger, geo, instance_id, worksp, final_path):
     #stations_filename = "stationProps.csv"
     #insets_path = f"{final_path}/insets/{stations_filename}"
     #store_name = str(instance_id) + "_station_props"
     #ret = geo.create_datastore(name=store_name, path=insets_path, workspace=worksp)
     #logger.debug(f"Attempted to add data store, file path: {insets_path}  return value: {ret}")
-
+'''
 
 # add a datastore in geoserver for the stationProps.csv file
 def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host, layergrp):
@@ -263,25 +175,23 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
     store_name = str(instance_id) + "_station_props"
     dbname = "adcirc_obs"
     table_name = "stations"
+    style_name = "observations_style_v2"
 
     logger.debug(f"csv_file_path: {csv_file_path} store name: {store_name}")
 
     # get asgs db connection
-    asgs_obsdb = asgsDB(logger, dbname, instance_id)
+    asgs_obsdb = ASGS_DB(logger, dbname, instance_id)
     # save stationProps file to db
     try: # make sure this completes before moving on - observations may not exist for this grid
         asgs_obsdb.insert_station_props(logger, geo, worksp, csv_file_path, geoserver_host)
     except (IOError, OSError):
         e = sys.exc_info()[0]
-        logger.warning(f"WARNING - Cannot save run properties in ASGS_DB. Error: {e}")
-        return layergrp
+        logger.warning(f"WARNING - Cannot save station data in {dbname} DB. Error: {e}")
+        #return layergrp
 
-    # create this layer in geoserver
-    #geo.create_featurestore(store_name, workspace=worksp, db=dbname, host=asgs_obsdb.get_host(), port=asgs_obsdb.get_port(), schema=table_name,
-                            #pg_user=asgs_obsdb.get_user(), pg_password=asgs_obsdb.get_password(), overwrite=False)
     # ... using pre-defined postgresql JNDI feature store in Geoserver
     ret = geo.create_jndi_featurestore(store_name, worksp, overwrite=False)
-    if ret is None: # sucessful
+    if ret is None: # successful
 
         # now publish this layer with an SQL filter based on instance_id
         sql = f"select * from stations where instance_id='{instance_id}'"
@@ -290,7 +200,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
         # TODO probably need to update this name - 5/21/21 - okay updated ...
         #  but maybe need to make this a little less messy
         db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-        asgsdb = asgsDB(logger, db_name, instance_id)
+        asgsdb = ASGS_DB(logger, db_name, instance_id)
         meta_dict = asgsdb.getRunMetadata()
         raw_date = meta_dict['currentdate']
         if raw_date:
@@ -298,11 +208,14 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
             date_list = [raw_date[i:i + 2] for i in range(0, len(raw_date), 2)]
             if len(date_list) == 3:
                 run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
-        if (meta_dict['forcing.stormname'] == 'NA'):
-            title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['asgs.enstorm']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
+        if (meta_dict['forcing.metclass'] == 'synoptic'):
+            title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
         else:
-            title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.stormname']}:{meta_dict['asgs.enstorm']} Advisory:{meta_dict['advisory']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
+            title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
         geo.publish_featurestore_sqlview(name, title, store_name, sql, key_column='gid', geom_name='the_geom', geom_type='Geometry', workspace=worksp)
+
+        # now set the default style
+        geo.set_default_style(worksp, name, style_name)
 
         # add this layer to the wfs layer group dict
         full_layername = f"{worksp}:{name}"
@@ -310,17 +223,133 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
 
     return layergrp
 
+# This only needs to get called if the current run is for a tropical storm/cyclone or hurricane
+# It will look for shapefile layers, related to the storm, in /data/<instancename>/input/shapefiles
+# and create layers for them in GeoServer
+# expecting to find cone.zip, track.zip and points.zip
+def add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, layergrp):
+    logger.info(f"add_shapefile_datastores: instance_id: {instance_id} shp_path: {shp_path}")
 
-# copy all .png files to the geoserver host to serve them from there
-def copy_pngs(logger, geoserver_host, geoserver_vm_userid, geoserver_proj_path, instance_id, final_path):
+    new_layergrp = layergrp
+
+    # retrieve run.properties metadata fro this instance_id
+    db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
+    asgsdb = ASGS_DB(logger, db_name, instance_id)
+    meta_dict = asgsdb.getRunMetadata()
+
+    # now check to see if this is a tropical storm and only continue if it is
+    if (meta_dict['forcing.metclass'] == 'tropical'):
+        run_date = ''
+        raw_date = meta_dict['currentdate']
+        if raw_date:
+            # raw date format is YYMMDD
+            date_list = [raw_date[i:i + 2] for i in range(0, len(raw_date), 2)]
+            if len(date_list) == 3:
+                run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
+
+        # find shapefile .zip files in shp_path
+        print(run_date)
+        try:
+            for file in fnmatch.filter(os.listdir(shp_path), '*.zip'):
+                param_name = os.path.splitext(file)[0]
+                store_name = str(instance_id) + "_" + param_name
+                zip_path = os.path.join(shp_path, file)
+                logger.info(f'Adding layer: {store_name} into workspace: {worksp}')
+                ret = geo.create_shp_datastore(zip_path, store_name=store_name, workspace=worksp, file_format='shp')
+
+                if "successfully" in ret:  # successful
+
+                    # get the filenames in the zip file to use as layer name
+                    layer_name = ""
+                    with ZipFile(zip_path, 'r') as zipObj:
+                        # Get list of files names in zip
+                        listOfiles = zipObj.namelist()
+                        if listOfiles is not None:
+                            layer_name = listOfiles[0].split(".")[0]
+
+                    # create a title for the TerriaMap data catalog
+                    advisory = layer_name.split("-")[1].split("_")[0]
+                    title = f"- Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory: {advisory}  Instance: {meta_dict['instancename']} "
+                    if param_name == 'cone':
+                        title = "NHC: Cone of Uncertainty " + title
+                    elif param_name == 'points':
+                        title = "NHC: Forecast Points " + title
+                    elif param_name == 'track':
+                        title = "NHC: Forecast Track " + title
+                    else:
+                        title = "NHC: Unidentified Layer " + title
+
+                    # now set the default style
+                    style_name = f"storm_{param_name}_style"
+                    logger.debug(f"setting style for layer {layer_name} to {style_name}")
+                    geo.set_default_style(worksp, layer_name, style_name)
+
+                    logger.debug(f"setting this coverage: {layer_name} to {title}")
+                    full_layername = f"{worksp}:{layer_name}"
+                    new_layergrp["nhc"].append({"title": title, "layername": full_layername})
+        except:
+            e = sys.exc_info()[0]
+            logger.error(f"Error encountered while trying to create NHC shapefile layers in GeoServer: {e}")
+            return new_layergrp
+
+    logger.debug(f"add_shapefile_datastores: returning updated layer_grp: {new_layergrp}")
+    return new_layergrp
+
+
+# copy all .json station files to the fileserver host to serve them from there
+def copy_jsons(logger, geoserver_proj_path, instance_id, final_path):
 
     from_path = f"{final_path}/insets/"
-    to_path = f"{geoserver_vm_userid}@{geoserver_host}:{geoserver_proj_path}/{instance_id}/"
+    to_path = f"{geoserver_proj_path}/{instance_id}/"
+
+    logger.info(f"Copying insets .json files from: {from_path} to: {to_path}")
+
+    # first create new directory if not already existing
+    new_dir = f"{geoserver_proj_path}/{instance_id}"
+    logger.debug(f"copy_jsons: Creating to path directory: {new_dir}")
+
+    mkdir_cmd = f"mkdir -p {new_dir}"
+
+    logger.debug(f"copy_jsons: mkdir_cmd={mkdir_cmd}")
+    os.system(mkdir_cmd)
+
+    # now go through any .json files in the insets dir, if it exists
+    if (os.path.isdir(from_path)):
+        for file in fnmatch.filter(os.listdir(from_path), '*.json'):
+            from_file_path = from_path + file
+            to_file_path = to_path + file
+            logger.debug(f"Copying .json file from: {from_file_path}  to: {to_file_path}")
+            scp_cmd = f"cp {from_file_path} {to_file_path}"
+            os.system(scp_cmd)
+
+# copy all .png files to the fileserver host to serve them from there
+# if ssh_host is 'none' cp files to PV in k8s,
+# instead of using /projects mounted on the geoserver host
+def copy_pngs(logger, geoserver_host, geoserver_proj_path, instance_id, final_path):
+
+    from_path = f"{final_path}/insets/"
+
+    # TODO: May put this back in final version
+    #to_path = f"{ssh_userid}@{geoserver_host}:{geoserver_proj_path}/{instance_id}/"
+
+    to_path = f"{geoserver_proj_path}/{instance_id}/"
+
+    # TODO: May put this back in final version
+    #if (ssh_host == 'none'):
+        #to_path = f"{geoserver_proj_path}/{instance_id}/"
+
     logger.info(f"Copying insets png files from: {from_path} to: {to_path}")
+
     # first create new directory if not already existing
     new_dir = f"{geoserver_proj_path}/{instance_id}"
     logger.debug(f"copy_pngs: Creating to path directory: {new_dir}")
-    mkdir_cmd = f'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {geoserver_vm_userid}@{geoserver_host} "mkdir -p {new_dir}"'
+
+    mkdir_cmd = f"mkdir -p {new_dir}"
+
+    # TODO: May put this back in final version
+    # mkdir_cmd = f'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {ssh_userid}@{geoserver_host} "mkdir -p {new_dir}"'
+    # if  (ssh_host == 'none'):
+        # mkdir_cmd = f"mkdir -p {new_dir}"
     logger.debug(f"copy_pngs: mkdir_cmd={mkdir_cmd}")
     os.system(mkdir_cmd)
 
@@ -330,7 +359,7 @@ def copy_pngs(logger, geoserver_host, geoserver_vm_userid, geoserver_proj_path, 
             from_file_path = from_path + file
             to_file_path = to_path + file
             logger.debug(f"Copying .png file from: {from_file_path}  to: {to_file_path}")
-            scp_cmd = f'scp -r -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {from_file_path} {to_file_path}'
+            scp_cmd = f"cp {from_file_path} {to_file_path}"
             os.system(scp_cmd)
 
     # also now pick up legend .png files in the tiff directory
@@ -340,7 +369,7 @@ def copy_pngs(logger, geoserver_host, geoserver_vm_userid, geoserver_proj_path, 
             from_file_path = from_path + file
             to_file_path = to_path + file
             logger.debug(f"Copying .png file from: {from_file_path}  to: {to_file_path}")
-            scp_cmd = f'scp -r -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {from_file_path} {to_file_path}'
+            scp_cmd = f"cp {from_file_path} {to_file_path}"
             os.system(scp_cmd)
 
 
@@ -350,11 +379,15 @@ def copy_pngs(logger, geoserver_host, geoserver_vm_userid, geoserver_proj_path, 
 
 def main(args):
 
+    # define main data dir
+    data_directory = "/data"
+
     # define dict to hold all of the layers created in this run
     # arrays contain sub-dicts like this: {"title": "", "layername": ""}
     layergrp = {
                  "wms": [],
-                 "wfs": []
+                 "wfs": [],
+                 "nhc": []
                }
 
     # get the log level and directory from the environment
@@ -379,10 +412,9 @@ def main(args):
     user = os.getenv('GEOSERVER_USER', 'user').strip()
     pswd = os.environ.get('GEOSERVER_PASSWORD', 'password').strip()
     url = os.environ.get('GEOSERVER_URL', 'url').strip()
-    worksp = os.environ.get('GEOSERVER_WORKSPACE', 'ADCIRC_2021').strip()
+    worksp = os.environ.get('GEOSERVER_WORKSPACE', 'ADCIRC').strip()
     geoserver_host = os.environ.get('GEOSERVER_HOST', 'host.here.org').strip()
-    geoserver_vm_userid = os.environ.get('SSH_USERNAME', 'user').strip()
-    geoserver_proj_path = os.environ.get('GEOSERVER_PROJ_PATH', '/projects').strip()
+    geoserver_proj_path = os.environ.get('FILESERVER_OBS_PATH', '/obs_pngs').strip()
     logger.debug(f"Retrieved GeoServer env vars - url: {url} workspace: {worksp} geoserver_host: {geoserver_host} geoserver_proj_path: {geoserver_proj_path}")
 
     logger.info(f"Connecting to GeoServer at host: {url}")
@@ -392,29 +424,46 @@ def main(args):
     # create a new workspace in geoserver if it does not already exist
     add_workspace(logger, geo, worksp)
 
+    # upload raster styles, if they don't already exist
+    upload_styles(logger, geo)
+
     # final dir path needs to be well defined
     # dir structure looks like this: /data/<instance id>/mbtiles/<parameter name>.<zoom level>.mbtiles
-    final_path = "/data/" + instance_id + "/final"
-    mbtiles_path = final_path + "/mbtiles"
-
-    # eventually use this to put tiffs into GeoServer as well
-    #tiff_path = final_path + "/tiff"
+    final_path = f"{data_directory}/{instance_id}/final"
+    #mbtiles_path = final_path + "/mbtiles"
+    imagemosaic_path = final_path + "/cogeo"
+    shp_path = f"{data_directory}/{instance_id}/input/shapefiles"
 
     # add a coverage store to geoserver for each .mbtiles found in the staging dir
-    new_layergrp = add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_path, layergrp)
+    #new_layergrp = add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_path, layergrp)
+    new_layergrp = add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemosaic_path, layergrp)
+    # if add image mosaic failed exit program with an error
+    if(new_layergrp is None):
+        logger.info("Error encountered while loading image mosaic into GeoServer - program exiting")
+        raise SystemExit()
 
     # now put NOAA OBS .csv file into geoserver
-    final_layergrp = add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host, new_layergrp)
+    next_layergrp = add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host, new_layergrp)
+    if (new_layergrp is None):
+        logger.info("Error encountered while loading noaa observation layer into GeoServer - program exiting")
+        raise SystemExit()
 
-    # finally copy all .png files to the geoserver host to serve them from there
-    copy_pngs(logger, geoserver_host, geoserver_vm_userid, geoserver_proj_path, instance_id, final_path)
+    # check to see if this is a tropical storm, and if so, add storm related shapefiles to GeoServer
+    final_layergrp = add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, next_layergrp)
+
+    # finally copy all .png & .json files to the fileserver host to serve them from there
+    copy_pngs(logger, geoserver_host, geoserver_proj_path, instance_id, final_path)
+    copy_jsons(logger, geoserver_proj_path, instance_id, final_path)
 
     # update TerriaMap data catalog
-    # build url to find existing apsviz.json file
-    url_parts = urlparse(url)
-    cat_url = f"{url_parts.scheme}://{url_parts.hostname}/obs_pngs/apsviz.json"
-    tc = TerriaCatalog(cat_url, geoserver_host, geoserver_vm_userid, pswd)
+    tc = TerriaCatalog(data_directory, geoserver_host, pswd)
     tc.update(final_layergrp)
+
+    # save TerriaMap data catalog to DB
+    tc_db = TerriaCatalogDB(data_directory, geoserver_host, pswd)
+    tc_db.update(final_layergrp)
+
+    # geo.upload_style("./st.xml", "maxele_style", "ADCIRC_2022", sld_version='1.0.0', overwrite=False)
 
 
 if __name__ == '__main__':
