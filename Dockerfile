@@ -79,6 +79,6 @@ ENV LOG_PATH=/data/logs
 
 ##########
 # at this point the container is ready to accept the launch command.
-# ex: python load-geoserver-images.py --instanceId lisa_4164-2022072906-namforecast
+# ex: python load-geoserver-images.py --instanceId <instance id>
 ##########
 
