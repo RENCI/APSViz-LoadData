@@ -68,6 +68,7 @@ ENV PATH /venv/bin:$PATH
 # Copy in the rest of the code
 COPY common common
 COPY styles styles
+COPY geo geo
 COPY ./*.py ./
 
 # set the python path
@@ -78,6 +79,6 @@ ENV LOG_PATH=/data/logs
 
 ##########
 # at this point the container is ready to accept the launch command.
-# ex: python load-geoserver-images.py --instanceId 4278-23-nhcOfcl
+# ex: python load-geoserver-images.py --instanceId lisa_4164-2022072906-namforecast
 ##########
 

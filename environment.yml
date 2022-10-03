@@ -5,6 +5,7 @@ dependencies:
   - python=3.9
   - gdal=3.5.2
   - pycurl==7.45.1
-  - geoserver-rest==2.3.4
+#  - geoserver-rest==2.3.4
   - geoserver-restconfig==2.0.8
   - psycopg2==2.9.3
+  - seaborn==0.12.0
