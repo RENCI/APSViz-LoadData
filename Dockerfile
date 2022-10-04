@@ -46,7 +46,7 @@ FROM python:3.9-slim
 RUN apt-get update
 
 # install wget and bc
-RUN apt-get install -y wget git
+RUN apt-get install -y wget vim curl
 
 # clear out the apt cache
 RUN apt-get clean
