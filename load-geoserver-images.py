@@ -27,21 +27,21 @@ def format_raw_date(raw_date):
 # the TerriaMap data catalog
 def create_cat_info(meta_dict):
 
-    info_dict = {"info": {}}
+    info_dict = {}
 
     # first add all metadata that is common for hurricane nam forecasts
     event_date = format_raw_date(meta_dict['currentdate'])
-    info_dict["info"].update({"event_date": meta_dict['currentdate']})
-    info_dict["info"].update({"event_type": meta_dict['asgs.enstorm']})
-    info_dict["info"].update({"grid_type": meta_dict['ADCIRCgrid']})
-    info_dict["info"].update({"instance_name": meta_dict['instancename']})
+    info_dict.update({"event_date": meta_dict['currentdate']})
+    info_dict.update({"event_type": meta_dict['asgs.enstorm']})
+    info_dict.update({"grid_type": meta_dict['ADCIRCgrid']})
+    info_dict.update({"instance_name": meta_dict['instancename']})
     # added for PSC
-    info_dict["info"].update({"meteorological_model": meta_dict['forcing.tropicalcyclone.vortexmodel']})
+    info_dict.update({"meteorological_model": meta_dict['forcing.tropicalcyclone.vortexmodel']})
 
     if (meta_dict['forcing.metclass'] == 'synoptic'):
         # added for PSC
-        info_dict["info"].update({"advisory": meta_dict['currentdate']})
-        info_dict["info"].update({"ensemble_member": meta_dict['asgs.enstorm']})
+        info_dict.update({"advisory": meta_dict['currentdate']})
+        info_dict.update({"ensemble_member": meta_dict['asgs.enstorm']})
 
     return info_dict
 
@@ -128,11 +128,9 @@ def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemo
 
             # add this layer to the wms layer group dict
             full_layername = f"{worksp}:{layer_name}"
-            layergrp["wms"].append({"title": title, "layername": full_layername})
             # now get create and info section for later use in the TerriaMap data catalog
             info_dict = create_cat_info(meta_dict)
-            layergrp["wms"].update(info_dict)
-
+            layergrp["wms"].append({"title": title, "layername": full_layername, "info": info_dict})
 
         else:
             return None

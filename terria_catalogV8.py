@@ -513,6 +513,7 @@ class TerriaCatalog:
     def add_wms_item(self,
                     name,
                     layers,
+                    info,
                     url=None,
                     show=True):
 
@@ -541,7 +542,6 @@ class TerriaCatalog:
         style = self.get_wms_style(layers)
 
         wms_item = self.create_wms_data_item(item_id, show, name, style, layers, url, legend_url)
-        info = self.update_item_info(wms_item["info"], date_str, name)
         wms_item["info"] = info
         cat_item_list.insert(0, wms_item)
         cat_group["members"] = cat_item_list
@@ -645,13 +645,13 @@ class TerriaCatalog:
 
         # now take care of the WMS layers
         for wms_layer_dict in layergrp["wms"]:
-            item_id = self.add_wms_item(wms_layer_dict["title"], wms_layer_dict["layername"])
-            if (("maxele" in wms_layer_dict["layername"]) and ("ec95d" in wms_layer_dict["title"])):
+            item_id = self.add_wms_item(wms_layer_dict["title"], wms_layer_dict["layername"], wms_layer_dict["info"])
+            if (("maxele" in wms_layer_dict["layername"]) and ("hsofs" in wms_layer_dict["title"])):
                 latest_layer_ids.append(item_id)
         # now do WFS layers
         for wfs_layer_dict in layergrp["wfs"]:
             item_id = self.add_wfs_item(wfs_layer_dict["title"], wfs_layer_dict["layername"])
-            if ("ec95d" in wfs_layer_dict["title"]):
+            if ("hsofs" in wfs_layer_dict["title"]):
                 # put this layer on top
                 latest_layer_ids.insert(0, item_id)
 
