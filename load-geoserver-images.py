@@ -245,7 +245,9 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
 
         # add this layer to the wfs layer group dict
         full_layername = f"{worksp}:{name}"
-        layergrp["wfs"].append({"title": title, "layername": full_layername})
+        # now get create and info section for later use in the TerriaMap data catalog
+        info_dict = create_cat_info(meta_dict)
+        layergrp["wfs"].append({"title": title, "layername": full_layername, "info": info_dict})
 
     return layergrp
 
