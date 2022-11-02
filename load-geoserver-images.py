@@ -76,6 +76,12 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name):
     meta_dict = asgsdb.getRunMetadata()
     raw_date = format_raw_date(meta_dict['currentdate'])
 
+    if raw_date:
+        # raw date format is YYMMDD
+        date_list = [raw_date[i:i + 2] for i in range(0, len(raw_date), 2)]
+        if len(date_list) == 3:
+            run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
+
     title = "N/A"
     if (meta_dict['forcing.metclass'] == 'synoptic'):
         title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"

@@ -455,7 +455,7 @@ class TerriaCatalog:
         # grid name
         info[2]["content"] = layer_info["grid_type"]
         # instance name
-        info[3]["content"] = layer_info["instance_type"]
+        info[3]["content"] = layer_info["instance_name"]
 
         # following info items added for PSC
         # meteorological model
