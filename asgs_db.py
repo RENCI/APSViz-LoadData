@@ -102,6 +102,8 @@ class ASGS_DB:
             'advisory': '',
             'forcing.stormname': '',
             'forcing.metclass': '',
+            'forcing.nwp.model': '',
+            'forcing.tropicalcyclone.vortexmodel': '',
             'asgs.enstorm': '',
             'forcing.tropicalcyclone.stormname': '',
             'ADCIRCgrid': '',

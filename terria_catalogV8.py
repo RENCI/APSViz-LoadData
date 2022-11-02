@@ -186,6 +186,21 @@ class TerriaCatalog:
                 '"name": "Instance Name",' \
                 '"content": "Content",' \
                 '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Meteorological Model",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Advisory",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Ensemble Member",' \
+                '"content": "Content",' \
+                '"show": false' \
             '}' \
         ']' \
     '}'
@@ -220,6 +235,21 @@ class TerriaCatalog:
             '},' \
             '{' \
                 '"name": "Instance Name",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Meteorological Model",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Advisory",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Ensemble Member",' \
                 '"content": "Content",' \
                 '"show": false' \
             '}' \
@@ -380,37 +410,60 @@ class TerriaCatalog:
     # date_str looks like this: 05-02-2022
     # name looks like this: Maximum Water Level - Run Location: RENCI Cycle: 12 Storm Name: namforecast ADCIRC Grid: NCSC_SAB_v1.23 (maxele.63.0.10)
     # or this: NOAA Observations - Location: RENCI Cycle: 12 Storm Name: namforecast ADCIRC Grid: NCSC_SAB_v1.23
-    def update_item_info(self, info, date_str, name):
-        self.logger.info(f'info: {info}  date_str: {date_str}  name: {name}')
-        # define search strings
-        forecast_type_srch = "Forecast Type:"
-        grid_name_srch = "Grid:"
-        inst_name_srch = "Instance:"
+    # def update_item_info(self, info, date_str, name):
+    #     self.logger.info(f'info: {info}  date_str: {date_str}  name: {name}')
+    #     # define search strings
+    #     forecast_type_srch = "Forecast Type:"
+    #     grid_name_srch = "Grid:"
+    #     inst_name_srch = "Instance:"
+    #
+    #     # get forecast type
+    #     forecast_idx = name.index(forecast_type_srch) + len(forecast_type_srch) + 1
+    #     tmp = name[forecast_idx:] # gives something like this: 'nameforecast Location: PSC Instance: ec95d-al01-bob-psc ADCIRC Grid: ec95d'
+    #     forecast_type = tmp.split(' ')[0]
+    #
+    #     # get gridname
+    #     grid_name_idx = name.index(grid_name_srch) + len(grid_name_srch) + 1
+    #     tmp = name[grid_name_idx:] # gives something like this: NCSC_SAB_v1.23
+    #     grid_name = tmp.split(' ')[0]
+    #
+    #     # get instance name
+    #     inst_name_idx = name.index(inst_name_srch) + len(inst_name_srch) + 1
+    #     tmp = name[inst_name_idx:] # gives something like this: ec95d-nam-bob3
+    #     inst_name = tmp.split(' ')[0]
+    #
+    #
+    #     # now update info content
+    #     info[0]["content"] = date_str
+    #     # event type
+    #     info[1]["content"] = forecast_type
+    #     # grid name
+    #     info[2]["content"] = grid_name
+    #     # instance name
+    #     info[3]["content"] = inst_name
+    #
+    #     return info
 
-        # get forecast type
-        forecast_idx = name.index(forecast_type_srch) + len(forecast_type_srch) + 1
-        tmp = name[forecast_idx:] # gives something like this: 'nameforecast Location: PSC Instance: ec95d-al01-bob-psc ADCIRC Grid: ec95d'
-        forecast_type = tmp.split(' ')[0]
+    # populate the info section for this group item
+    def update_item_info(self, info, layer_info):
+        self.logger.info(f'info: {info}')
 
-        # get gridname
-        grid_name_idx = name.index(grid_name_srch) + len(grid_name_srch) + 1
-        tmp = name[grid_name_idx:] # gives something like this: NCSC_SAB_v1.23
-        grid_name = tmp.split(' ')[0]
-
-        # get instance name
-        inst_name_idx = name.index(inst_name_srch) + len(inst_name_srch) + 1
-        tmp = name[inst_name_idx:] # gives something like this: ec95d-nam-bob3
-        inst_name = tmp.split(' ')[0]
-
-
-        # now update info content
-        info[0]["content"] = date_str
+        # update info content
+        info[0]["content"] = layer_info["event_date"]
         # event type
-        info[1]["content"] = forecast_type
+        info[1]["content"] = layer_info["event_type"]
         # grid name
-        info[2]["content"] = grid_name
+        info[2]["content"] = layer_info["grid_type"]
         # instance name
-        info[3]["content"] = inst_name
+        info[3]["content"] = layer_info["instance_name"]
+
+        # following info items added for PSC
+        # meteorological model
+        info[4]["content"] = layer_info["meteorological_model"]
+        # advisory
+        info[5]["content"] = layer_info["advisory"]
+        # ensemble member
+        info[6]["content"] = layer_info["ensemble_member"]
 
         return info
 
@@ -513,6 +566,7 @@ class TerriaCatalog:
     def add_wms_item(self,
                     name,
                     layers,
+                    wms_info,
                     url=None,
                     show=True):
 
@@ -541,7 +595,7 @@ class TerriaCatalog:
         style = self.get_wms_style(layers)
 
         wms_item = self.create_wms_data_item(item_id, show, name, style, layers, url, legend_url)
-        info = self.update_item_info(wms_item["info"], date_str, name)
+        info = self.update_item_info(wms_item["info"], wms_info)
         wms_item["info"] = info
         cat_item_list.insert(0, wms_item)
         cat_group["members"] = cat_item_list
@@ -560,6 +614,7 @@ class TerriaCatalog:
     def add_wfs_item(self,
                     name,
                     typeNames,
+                    wfs_info,
                     url=None,
                     show=True):
 
@@ -581,7 +636,7 @@ class TerriaCatalog:
         cat_item_list = cat_group["members"]
 
         wfs_item = self.create_wfs_data_item(item_id, show, name, typeNames, url)
-        info = self.update_item_info(wfs_item["info"], date_str, name)
+        info = self.update_item_info(wfs_item["info"], wfs_info)
         wfs_item["info"] = info
         cat_item_list.insert(0, wfs_item)
         cat_group["members"] = cat_item_list
@@ -645,13 +700,13 @@ class TerriaCatalog:
 
         # now take care of the WMS layers
         for wms_layer_dict in layergrp["wms"]:
-            item_id = self.add_wms_item(wms_layer_dict["title"], wms_layer_dict["layername"])
-            if (("maxele" in wms_layer_dict["layername"]) and ("ec95d" in wms_layer_dict["title"])):
+            item_id = self.add_wms_item(wms_layer_dict["title"], wms_layer_dict["layername"], wms_layer_dict["info"])
+            if (("maxele" in wms_layer_dict["layername"]) and ("hsofs" in wms_layer_dict["title"])):
                 latest_layer_ids.append(item_id)
         # now do WFS layers
         for wfs_layer_dict in layergrp["wfs"]:
-            item_id = self.add_wfs_item(wfs_layer_dict["title"], wfs_layer_dict["layername"])
-            if ("ec95d" in wfs_layer_dict["title"]):
+            item_id = self.add_wfs_item(wfs_layer_dict["title"], wfs_layer_dict["layername"], wms_layer_dict["info"])
+            if ("hsofs" in wfs_layer_dict["title"]):
                 # put this layer on top
                 latest_layer_ids.insert(0, item_id)
 

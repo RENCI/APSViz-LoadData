@@ -11,7 +11,41 @@ from terria_catalogV8DB import TerriaCatalogDB
 from asgs_db import ASGS_DB
 from zipfile import ZipFile
 
- # create a new workspace in geoserver if it does not already exist
+
+# format raw date from DB
+def format_raw_date(raw_date):
+    run_date = "N/A"
+    if raw_date:
+        # raw date format is YYMMDD
+        date_list = [raw_date[i:i + 2] for i in range(0, len(raw_date), 2)]
+        if len(date_list) == 3:
+            run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
+
+    return run_date
+
+# build info section metadata for use in creating
+# the TerriaMap data catalog
+def create_cat_info(meta_dict):
+
+    info_dict = {}
+
+    # first add all metadata that is common for hurricane nam forecasts
+    event_date = format_raw_date(meta_dict['currentdate'])
+    info_dict.update({"event_date": meta_dict['currentdate']})
+    info_dict.update({"event_type": meta_dict['asgs.enstorm']})
+    info_dict.update({"grid_type": meta_dict['ADCIRCgrid']})
+    info_dict.update({"instance_name": meta_dict['instancename']})
+    # added for PSC
+    info_dict.update({"meteorological_model": meta_dict['forcing.tropicalcyclone.vortexmodel']})
+
+    if (meta_dict['forcing.metclass'] == 'synoptic'):
+        # added for PSC
+        info_dict.update({"advisory": meta_dict['currentdate']})
+        info_dict.update({"ensemble_member": meta_dict['asgs.enstorm']})
+
+    return info_dict
+
+# create a new workspace in geoserver if it does not already exist
 def add_workspace(logger, geo, worksp):
     logger.info(f"workspace: {worksp}")
     if (geo.get_workspace(worksp) is None):
@@ -40,12 +74,7 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name):
     db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
     asgsdb = ASGS_DB(logger, db_name, instance_id)
     meta_dict = asgsdb.getRunMetadata()
-    raw_date = meta_dict['currentdate']
-    if raw_date:
-        # raw date format is YYMMDD
-        date_list = [raw_date[i:i+2] for i in range(0, len(raw_date), 2)]
-        if len(date_list) == 3:
-            run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
+    run_date = format_raw_date(meta_dict['currentdate'])
 
     title = "N/A"
     if (meta_dict['forcing.metclass'] == 'synoptic'):
@@ -56,7 +85,7 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name):
 
     geo.set_coverage_title(worksp, layer_name, layer_name, title)
 
-    return title
+    return title, meta_dict
 
 
 def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemosaic_path, layergrp):
@@ -81,7 +110,7 @@ def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemo
 
             # now we just need to tweak the layer title to make it more
             # readable in Terria Map
-            title = update_layer_title(logger, geo, instance_id, worksp, layer_name)
+            title, meta_dict = update_layer_title(logger, geo, instance_id, worksp, layer_name)
 
             # set the default style for this layer
             if "swan" in layer_name:
@@ -99,7 +128,10 @@ def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemo
 
             # add this layer to the wms layer group dict
             full_layername = f"{worksp}:{layer_name}"
-            layergrp["wms"].append({"title": title, "layername": full_layername})
+            # now get create and info section for later use in the TerriaMap data catalog
+            info_dict = create_cat_info(meta_dict)
+            layergrp["wms"].append({"title": title, "layername": full_layername, "info": info_dict})
+
         else:
             return None
 
@@ -131,7 +163,7 @@ def add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_pa
 
             # now we just need to tweak the layer title to make it more
             # readable in Terria Map
-            title = update_layer_title(logger, geo, instance_id, worksp, layer_name)
+            title, meta_dict = update_layer_title(logger, geo, instance_id, worksp, layer_name)
 
             # update DB with url of layer for access from website NEED INSTANCE ID for this
             layer_url = f'{url}/{worksp}/wcs?service=WCS&version=1.1.1&request=DescribeCoverage&identifiers={worksp}:{layer_name}'
@@ -213,7 +245,9 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
 
         # add this layer to the wfs layer group dict
         full_layername = f"{worksp}:{name}"
-        layergrp["wfs"].append({"title": title, "layername": full_layername})
+        # now get create and info section for later use in the TerriaMap data catalog
+        info_dict = create_cat_info(meta_dict)
+        layergrp["wfs"].append({"title": title, "layername": full_layername, "info": info_dict})
 
     return layergrp
 
