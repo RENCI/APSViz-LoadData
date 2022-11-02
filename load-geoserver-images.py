@@ -74,13 +74,7 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name):
     db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
     asgsdb = ASGS_DB(logger, db_name, instance_id)
     meta_dict = asgsdb.getRunMetadata()
-    raw_date = format_raw_date(meta_dict['currentdate'])
-
-    if raw_date:
-        # raw date format is YYMMDD
-        date_list = [raw_date[i:i + 2] for i in range(0, len(raw_date), 2)]
-        if len(date_list) == 3:
-            run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
+    run_date = format_raw_date(meta_dict['currentdate'])
 
     title = "N/A"
     if (meta_dict['forcing.metclass'] == 'synoptic'):
