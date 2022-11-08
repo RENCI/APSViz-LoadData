@@ -38,7 +38,7 @@ def create_cat_info(meta_dict):
     # added for PSC
     info_dict.update({"meteorological_model": meta_dict['forcing.tropicalcyclone.vortexmodel']})
 
-    if (meta_dict['forcing.metclass'] == 'synoptic'):
+    if (meta_dict['forcing.metclass'] == 'tropical'):
         # added for PSC
         info_dict.update({"advisory": meta_dict['currentdate']})
         info_dict.update({"ensemble_member": meta_dict['asgs.enstorm']})
