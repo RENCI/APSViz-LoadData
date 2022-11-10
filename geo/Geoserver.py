@@ -7,7 +7,6 @@ from .Calculation_gdal import raster_value
 from .supports import prepare_zip_file
 from typing import Optional
 
-
 # call back class for read the data
 class DataProvider(object):
     def __init__(self, data):
@@ -616,7 +615,7 @@ class Geoserver:
                 "Accept": "application/xml",
             }
 
-            if isinstance(data, dict):
+            if isinstance(path, dict):
                 path = prepare_zip_file(store_name, path)
 
             url = '{0}/rest/workspaces/{1}/datastores/{2}/file.{3}'.format(
