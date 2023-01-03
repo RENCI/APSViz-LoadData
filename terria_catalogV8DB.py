@@ -618,12 +618,12 @@ class TerriaCatalogDB:
         # next take care of the WMS layers
         for wms_layer_dict in layergrp["wms"]:
             item_id = self.add_wms_item(wms_layer_dict["title"], wms_layer_dict["layername"], wms_layer_dict["info"])
-            if (("maxele" in wms_layer_dict["layername"]) and ("hsofs" in wms_layer_dict["title"])):
+            if (("maxele" in wms_layer_dict["layername"]) and ("NCSC_SAB" in wms_layer_dict["title"])):
                 latest_layer_ids.append(item_id)
         # now do WFS layers
         for wfs_layer_dict in layergrp["wfs"]:
             item_id = self.add_wfs_item(wfs_layer_dict["title"], wfs_layer_dict["layername"], wms_layer_dict["info"])
-            if ("hsofs" in wfs_layer_dict["title"]):
+            if ("NCSC_SAB" in wfs_layer_dict["title"]):
                 # put this layer on top
                 latest_layer_ids.insert(0, item_id)
 
