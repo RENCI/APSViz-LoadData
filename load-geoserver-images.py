@@ -219,6 +219,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
     ret = geo.create_jndi_featurestore(store_name, worksp, overwrite=False)
     if ret is None: # successful
 
+        logger.info(f"Added JNDI featurestore: {store_name}")
         # now publish this layer with an SQL filter based on instance_id
         sql = f"select * from stations where instance_id='{instance_id}'"
         name = f"{instance_id}_station_properies_view"
@@ -381,7 +382,9 @@ def copy_jsons(logger, geoserver_proj_path, instance_id, final_path):
 def copy_pngs(logger, geoserver_host, geoserver_proj_path, instance_id, final_path):
 
     from_path = f"{final_path}/insets/"
-    logger.info(f"Copying insets png files from: {from_path}")
+    to_path = f"{geoserver_proj_path}/{instance_id}/"
+
+    logger.info(f"Copying insets png files from: {from_path} to: {to_path}")
 
     # first create new directory if not already existing
     new_dir = f"{geoserver_proj_path}/{instance_id}"
