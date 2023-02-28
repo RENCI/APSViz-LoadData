@@ -168,7 +168,7 @@ class TerriaCatalogDB:
         '"layers": "layers",' \
         '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms",' \
         '"featureInfoTemplate": {' \
-            '"template": "<div class=\u2019stations\u2019><p><h3>{{stationname}}, {{state}}</h3></p><chart sources=\u0027{{csvurl}\u0027 column-units=\u0027:Meters,NOAA NOS:Meters,NOAA Tidal:Meters\u0027 column-titles=\u0027:Forecast,NOAA NOS:NOAA NOS,NOAA Tidal:NOAA Tidal\u0027 title=\u0027{{stationname}}\u0027></chart></div>"' \
+            '"template": "<div class=\u2019stations\u2019><p><h3>{{stationname}}, {{state}}</h3></p><chart sources=\u0027{{csvurl}\u0027 column-units=\u0027Forecast:Meters,NOAA NOS:Meters,NOAA Tidal:Meters\u0027 column-titles=\u0027Forecast:Forecast,NOAA NOS:NOAA NOS,NOAA Tidal:NOAA Tidal\u0027 title=\u0027{{stationname}}\u0027></chart></div>"' \
         '},' \
         '"info": [' \
             '{' \
