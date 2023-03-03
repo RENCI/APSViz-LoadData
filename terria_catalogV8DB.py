@@ -265,8 +265,8 @@ class TerriaCatalogDB:
         return legend_url
 
     # create a unique id for this catalog item
-    # looks like this: 4007-2022050212-maxele
-    # layername looks like this: ADCIRC_2021:4007-2022050212-namforecast_maxele.63.0.10
+    # looks like this: 4007-2022050212-namforecast-maxele
+    # layername looks like this: ADCIRC_2021:4007-2022050212-namforecast_maxele63
     def create_cat_itemid(self, layername, type):
         self.logger.debug(f'layername: {layername}  type: {type:}')
         item_id = ""
@@ -287,14 +287,13 @@ class TerriaCatalogDB:
 
         # if type=wms, get param name, otherwise assume "obs"
         if (type == "wms"):
-            # have this in str1[2]: namforecast_maxele.63.0.10
-            tmp = str1[2].split('_')
-            str1 = tmp[1].split('.')
-            id_pc2 = str1[0]
+            # have this in str1[2]: namforecast_maxele63
+            str1 = str1[2].split('_')
+            id_pc2 = f"{str1[0]}-{str1[1]}"
         elif (type == "wfs"):
-            id_pc2 = "obs"
+            id_pc2 = f"{str1[0]}-obs"
         else:  # NHC
-            id_pc2 = "nhc"
+            id_pc2 = f"{str1[0]}-nhc"
 
         item_id = f"{id_pc1}-{id_pc2}"
 
@@ -618,12 +617,12 @@ class TerriaCatalogDB:
         # next take care of the WMS layers
         for wms_layer_dict in layergrp["wms"]:
             item_id = self.add_wms_item(wms_layer_dict["title"], wms_layer_dict["layername"], wms_layer_dict["info"])
-            if (("maxele" in wms_layer_dict["layername"]) and ("NCSC_SAB" in wms_layer_dict["title"])):
+            if (("maxele" in wms_layer_dict["layername"]) and ("ec95d" in wms_layer_dict["title"])):
                 latest_layer_ids.append(item_id)
         # now do WFS layers
         for wfs_layer_dict in layergrp["wfs"]:
             item_id = self.add_wfs_item(wfs_layer_dict["title"], wfs_layer_dict["layername"], wms_layer_dict["info"])
-            if ("NCSC_SAB" in wfs_layer_dict["title"]):
+            if ("ec95d" in wfs_layer_dict["title"]):
                 # put this layer on top
                 latest_layer_ids.insert(0, item_id)
 
