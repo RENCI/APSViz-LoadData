@@ -219,6 +219,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
     ret = geo.create_jndi_featurestore(store_name, worksp, overwrite=False)
     if ret is None: # successful
 
+        logger.info(f"Added JNDI featurestore: {store_name}")
         # now publish this layer with an SQL filter based on instance_id
         sql = f"select * from stations where instance_id='{instance_id}'"
         name = f"{instance_id}_station_properies_view"
@@ -323,6 +324,31 @@ def add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, layergr
     logger.debug(f"add_shapefile_datastores: returning updated layer_grp: {new_layergrp}")
     return new_layergrp
 
+# copy all .csv station files to the fileserver host to serve them from there
+def copy_csvs(logger, geoserver_proj_path, instance_id, final_path):
+
+    from_path = f"{final_path}/insets/"
+    to_path = f"{geoserver_proj_path}/{instance_id}/"
+
+    logger.info(f"Copying insets .csv files from: {from_path} to: {to_path}")
+
+    # first create new directory if not already existing
+    new_dir = f"{geoserver_proj_path}/{instance_id}"
+    logger.debug(f"copy_csvs: Creating to path directory: {new_dir}")
+
+    mkdir_cmd = f"mkdir -p {new_dir}"
+
+    logger.debug(f"copy_csvs: mkdir_cmd={mkdir_cmd}")
+    os.system(mkdir_cmd)
+
+    # now go through any .json files in the insets dir, if it exists
+    if (os.path.isdir(from_path)):
+        for file in fnmatch.filter(os.listdir(from_path), '*.csv'):
+            from_file_path = from_path + file
+            to_file_path = to_path + file
+            logger.debug(f"Copying .csv file from: {from_file_path}  to: {to_file_path}")
+            scp_cmd = f"cp {from_file_path} {to_file_path}"
+            os.system(scp_cmd)
 
 # copy all .json station files to the fileserver host to serve them from there
 def copy_jsons(logger, geoserver_proj_path, instance_id, final_path):
@@ -356,15 +382,7 @@ def copy_jsons(logger, geoserver_proj_path, instance_id, final_path):
 def copy_pngs(logger, geoserver_host, geoserver_proj_path, instance_id, final_path):
 
     from_path = f"{final_path}/insets/"
-
-    # TODO: May put this back in final version
-    #to_path = f"{ssh_userid}@{geoserver_host}:{geoserver_proj_path}/{instance_id}/"
-
     to_path = f"{geoserver_proj_path}/{instance_id}/"
-
-    # TODO: May put this back in final version
-    #if (ssh_host == 'none'):
-        #to_path = f"{geoserver_proj_path}/{instance_id}/"
 
     logger.info(f"Copying insets png files from: {from_path} to: {to_path}")
 
@@ -373,11 +391,6 @@ def copy_pngs(logger, geoserver_host, geoserver_proj_path, instance_id, final_pa
     logger.debug(f"copy_pngs: Creating to path directory: {new_dir}")
 
     mkdir_cmd = f"mkdir -p {new_dir}"
-
-    # TODO: May put this back in final version
-    # mkdir_cmd = f'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no {ssh_userid}@{geoserver_host} "mkdir -p {new_dir}"'
-    # if  (ssh_host == 'none'):
-        # mkdir_cmd = f"mkdir -p {new_dir}"
     logger.debug(f"copy_pngs: mkdir_cmd={mkdir_cmd}")
     os.system(mkdir_cmd)
 
@@ -482,6 +495,7 @@ def main(args):
     # finally copy all .png & .json files to the fileserver host to serve them from there
     copy_pngs(logger, geoserver_host, geoserver_proj_path, instance_id, final_path)
     copy_jsons(logger, geoserver_proj_path, instance_id, final_path)
+    copy_csvs(logger, geoserver_proj_path, instance_id, final_path)
 
     # update TerriaMap data catalog
     tc = TerriaCatalog(data_directory, geoserver_host, pswd)
