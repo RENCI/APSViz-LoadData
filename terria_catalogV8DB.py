@@ -291,7 +291,8 @@ class TerriaCatalogDB:
             str1 = str1[2].split('_')
             id_pc2 = f"{str1[0]}-{str1[1]}"
         elif (type == "wfs"):
-            id_pc2 = f"{str1[0]}-obs"
+            # have this in str1[2]: nowcast_station_properies_view
+            id_pc2 = f"{str1[2].split('_')[0]}-obs"
         else:  # NHC
             id_pc2 = f"{str1[0]}-nhc"
 
