@@ -6,7 +6,7 @@ from geo.Geoserver import Geoserver
 from geoserver.catalog import Catalog
 from common.logging import LoggingUtil
 from urllib.parse import urlparse
-from terria_catalogV8 import TerriaCatalog
+#from terria_catalogV8 import TerriaCatalog
 from terria_catalogV8DB import TerriaCatalogDB
 from asgs_db import ASGS_DB
 from zipfile import ZipFile
@@ -498,8 +498,8 @@ def main(args):
     copy_csvs(logger, geoserver_proj_path, instance_id, final_path)
 
     # update TerriaMap data catalog
-    tc = TerriaCatalog(data_directory, geoserver_host, pswd)
-    tc.update(final_layergrp)
+    #tc = TerriaCatalog(data_directory, geoserver_host, pswd)
+    #tc.update(final_layergrp)
 
     # save TerriaMap data catalog to DB
     tc_db = TerriaCatalogDB(data_directory, geoserver_host, pswd)
