@@ -264,6 +264,41 @@ class TerriaCatalogDB:
 
         return legend_url
 
+
+    # get and return the cycle name in the title, if any
+    def getCycle(self, name):
+        self.logger.debug(f'getCycle name: {name}')
+        srch_str = 'Cycle: '
+
+        try:
+            idx = name.index(srch_str)
+            start_idx = idx + len(srch_str)
+            cycle = name[start_idx:start_idx+2]
+
+            return cycle
+
+        except ValueError:
+            return ''
+
+    # get and return the storm name in the title, if any
+    # looks like this in Title: Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:
+    def getStormName(self, name):
+            self.logger.debug(f'getStormName name: {name}')
+            srch_start_str = 'Storm Name: '
+            srch_end_str = ' Advisory:'
+
+            try:
+                idx = name.index(srch_start_str)
+                start_idx = idx + len(srch_start_str)
+                end_idx = name.index(srch_end_str)
+                storm_name = name[start_idx:end_idx]
+
+                return storm_name
+
+            except ValueError:
+                return ''
+
+
     # create a unique id for this catalog item
     # looks like this: 4007-2022050212-namforecast-maxele
     # layername looks like this: ADCIRC_2021:4007-2022050212-namforecast_maxele63
@@ -499,6 +534,7 @@ class TerriaCatalogDB:
     # workspace, date, cycle, runtype, stormname, advisory, grid):
     # group is an ENUM - i.e. CatalogGroup.RECENT
     def add_wms_item(self,
+                    metclass,
                     name,
                     layers,
                     wms_info,
@@ -536,8 +572,14 @@ class TerriaCatalogDB:
         event_type = info[1]["content"]
         run_date = info[0]["content"]
         instance_name = info[3]["content"]
+        advisory = info[5]["content"]
+        # make sure this advisory is a real storm advisory number, if not (is a date) use empty string
+        if (len(advisory) > 3):
+            advisory = ''
+        storm_name = self.getStormName(name)
+        cycle = self.getCycle(name)
 
-        self.apsviz_db.add_cat_item(grid_type, event_type, run_date, instance_name, wms_item)
+        self.apsviz_db.add_cat_item(grid_type, event_type, run_date, instance_name, wms_item, metclass, storm_name, cycle, advisory)
 
         return item_id
 
@@ -545,6 +587,7 @@ class TerriaCatalogDB:
     # put the newest items at the top and only show the last 5 runs - not possible?
     # group is an ENUM - i.e. CatalogGroup.RECENT
     def add_wfs_item(self,
+                    metclass,
                     name,
                     typeNames,
                     wfs_info,
@@ -572,8 +615,14 @@ class TerriaCatalogDB:
         event_type = info[1]["content"]
         run_date = info[0]["content"]
         instance_name = info[3]["content"]
+        advisory = info[5]["content"]
+        # make sure this advisory is a real storm advisory number, if not (is a date) use empty string
+        if (len(advisory) > 3):
+            advisory = ''
+        storm_name = self.getStormName(name)
+        cycle = self.getCycle(name)
 
-        self.apsviz_db.add_cat_item(grid_type, event_type, run_date, instance_name, wfs_item)
+        self.apsviz_db.add_cat_item(grid_type, event_type, run_date, instance_name, wfs_item, metclass, storm_name, cycle, advisory)
 
         return item_id
 
@@ -617,12 +666,12 @@ class TerriaCatalogDB:
 
         # next take care of the WMS layers
         for wms_layer_dict in layergrp["wms"]:
-            item_id = self.add_wms_item(wms_layer_dict["title"], wms_layer_dict["layername"], wms_layer_dict["info"])
+            item_id = self.add_wms_item(wms_layer_dict["metclass"], wms_layer_dict["title"], wms_layer_dict["layername"], wms_layer_dict["info"])
             if (("maxele" in wms_layer_dict["layername"]) and ("ec95d" in wms_layer_dict["title"])):
                 latest_layer_ids.append(item_id)
         # now do WFS layers
         for wfs_layer_dict in layergrp["wfs"]:
-            item_id = self.add_wfs_item(wfs_layer_dict["title"], wfs_layer_dict["layername"], wms_layer_dict["info"])
+            item_id = self.add_wfs_item(wfs_layer_dict["metclass"], wfs_layer_dict["title"], wfs_layer_dict["layername"], wms_layer_dict["info"])
             if ("ec95d" in wfs_layer_dict["title"]):
                 # put this layer on top
                 latest_layer_ids.insert(0, item_id)

@@ -35,6 +35,7 @@ def create_cat_info(meta_dict):
     info_dict.update({"event_type": meta_dict['asgs.enstorm']})
     info_dict.update({"grid_type": meta_dict['ADCIRCgrid']})
     info_dict.update({"instance_name": meta_dict['instancename']})
+    info_dict.update({"met_class": meta_dict['forcing.metclass']})
     # added for PSC
     info_dict.update({"meteorological_model": meta_dict['forcing.tropicalcyclone.vortexmodel']})
 
@@ -130,7 +131,7 @@ def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemo
             full_layername = f"{worksp}:{layer_name}"
             # now get create and info section for later use in the TerriaMap data catalog
             info_dict = create_cat_info(meta_dict)
-            layergrp["wms"].append({"title": title, "layername": full_layername, "info": info_dict})
+            layergrp["wms"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict})
 
         else:
             return None
@@ -248,7 +249,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
         full_layername = f"{worksp}:{name}"
         # now get create and info section for later use in the TerriaMap data catalog
         info_dict = create_cat_info(meta_dict)
-        layergrp["wfs"].append({"title": title, "layername": full_layername, "info": info_dict})
+        layergrp["wfs"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict})
 
     return layergrp
 

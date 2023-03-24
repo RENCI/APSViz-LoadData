@@ -419,6 +419,74 @@ class Geoserver:
         except Exception as e:
             return 'Error: {}'.format(e)
 
+    def create_s3cog_coveragestore(self, s3_url, store_name, workspace=None, file_type='GeoTIFF'):
+        """
+        create coveragestore from s3 bucket data
+        s3_url the path to the s3 file and file_type indicating it is a geotiff, arcgrid or other raster type
+        store_name is the name of the coveragestore
+        workspace is the GeoServer workspace to use to create this coveragestore
+        file_type is the type of file in the S3 bucket (must be a COG)
+        example s3_url : cog://http://hecrastest.s3.amazonaws.com/max_wse.tif
+        """
+
+        try:
+            r = None
+            if workspace is None:
+                workspace = 'default'
+
+            data = '<coverageStore><name>{0}</name><type>{1}</type><enabled>true</enabled><workspace><name>{2}</name></workspace><__default__>true</__default__><url>{3}</url> \
+                <metadata><entry key="CogSettings.Key"><cogSettings><useCachingStream>false</useCachingStream><rangeReaderSettings>HTTP</rangeReaderSettings></cogSettings></entry> \
+                </metadata></coverageStore>' \
+                .format(store_name, file_type, workspace, s3_url)
+            url = '{0}/rest/workspaces/{1}/coveragestores'.format(self.service_url, workspace)
+            headers = {"content-type": "application/xml"}
+            r = requests.post(url, data, auth=(
+                self.username, self.password), headers=headers)
+
+            if r.status_code in [200, 201]:
+                return "cogs3 coveragestore created/updated successfully"
+
+            else:
+                raise Exception('cogs3 coveragestore can not be created')
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def publish_s3cog_coverage(self, s3_url, store_name, lyr_name=None, workspace=None):
+        """
+        create coverage from s3 bucket data
+        s3_url the path to the s3 file and file_type indicating it is a geotiff, arcgrid or other raster type
+        store_name is the name of the coveragestore
+        lyr_name is the name of the coverage, if it is not provided it will be the same as the store_name
+        example s3 cog url : cog://http://hecrastest.s3.amazonaws.com/max_wse.tif
+        """
+
+        try:
+            r = None
+            # get base name of the file in the S3 bucket - example from s3_url example above: 'max_wse'
+            native_name = s3_url.rsplit('/', 1)[-1].split('.')[0]
+
+            if lyr_name is None:
+                lyr_name = store_name
+
+            if workspace is None:
+                workspace = 'default'
+
+            data = '<coverage><name>{0}</name><title>{0}</title><nativeName>{1}</nativeName></coverage>'.format(lyr_name, native_name)
+            url = '{0}/rest/workspaces/{1}/coveragestores/{2}/coverages'.format(self.service_url, workspace, store_name)
+            headers = {"content-type": "application/xml"}
+            r = requests.post(url, data, auth=(
+                self.username, self.password), headers=headers)
+
+            if r.status_code in [200, 201]:
+                return "cogs3 coverage created/updated successfully"
+
+            else:
+                raise Exception('cogs3 coverage can not be created')
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
     def create_imagemosaic(self, path, workspace=None, lyr_name=None):
         """
         create imagemosaic from data in a zipfile
