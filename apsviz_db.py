@@ -158,7 +158,7 @@ class APSVIZ_DB:
     # _met_class text DEFAULT ''::text, _storm_name text DEFAULT ''::text, _cycle text DEFAULT ''::text, _advisory_number text DEFAULT ''::text,
     # _member_id text DEFAULT NULL::text, _group_id integer DEFAULT NULL::integer) returns integer
     def add_cat_item(self, grid_type, event_type, run_date, instance_name, member_json, met_class, storm_name, cycle, advisory):
-        self.logger.info(f'APSVIZ_DB: Creating new catalog member, grid_type:{grid_type} event_type:{event_type} run_date:{run_date} instance_name:{instance_name} met_class{met_class} storm_name:{storm_name} cycle:{cycle} advisory{advisory}')
+        self.logger.info(f'APSVIZ_DB: Creating new catalog member, grid_type:{grid_type} event_type:{event_type} run_date:{run_date} instance_name:{instance_name} met_class:{met_class} storm_name:{storm_name} cycle:{cycle} advisory{advisory}')
 
         # convert json to a string for DB
         member_str = json.dumps(member_json)

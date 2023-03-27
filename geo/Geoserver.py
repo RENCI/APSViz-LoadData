@@ -434,7 +434,7 @@ class Geoserver:
             if workspace is None:
                 workspace = 'default'
 
-            data = '<coverageStore><name>{0}</name><type>{1}</type><enabled>true</enabled><workspace><name>{2}</name></workspace><__default__>true</__default__><url>{3}</url> \
+            data = '<coverageStore><name>{0}</name><type>{1}</type><enabled>true</enabled><workspace><name>{2}</name></workspace><__default__>true</__default__><url>cog://{3}</url> \
                 <metadata><entry key="CogSettings.Key"><cogSettings><useCachingStream>false</useCachingStream><rangeReaderSettings>HTTP</rangeReaderSettings></cogSettings></entry> \
                 </metadata></coverageStore>' \
                 .format(store_name, file_type, workspace, s3_url)
@@ -458,7 +458,7 @@ class Geoserver:
         s3_url the path to the s3 file and file_type indicating it is a geotiff, arcgrid or other raster type
         store_name is the name of the coveragestore
         lyr_name is the name of the coverage, if it is not provided it will be the same as the store_name
-        example s3 cog url : cog://http://hecrastest.s3.amazonaws.com/max_wse.tif
+        example s3 url : http://hecrastest.s3.amazonaws.com/max_wse.tif
         """
 
         try:

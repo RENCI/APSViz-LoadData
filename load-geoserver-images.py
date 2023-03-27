@@ -3,7 +3,6 @@ import fnmatch
 import logging
 
 from geo.Geoserver import Geoserver
-from geoserver.catalog import Catalog
 from common.logging import LoggingUtil
 from urllib.parse import urlparse
 #from terria_catalogV8 import TerriaCatalog
@@ -87,6 +86,48 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name):
     geo.set_coverage_title(worksp, layer_name, layer_name, title)
 
     return title, meta_dict
+
+
+def add_s3_coveragestore(logger, geo, s3_url, instance_id, worksp, layergrp):
+
+    logger.info(f"instance_id: {instance_id} workspace: {worksp} s3_url: {s3_url}")
+
+    # build layer_name or store_name (same)
+    store_name = str(instance_id) + "_HEC-RAS"
+    logger.info(f'Adding store: {store_name} into workspace: {worksp}')
+
+    # create the s3 geotiff coveragestore
+    ret = geo.create_s3cog_coveragestore(s3_url, store_name, workspace=worksp)
+
+    logger.debug(f"Attempted to add s3 geotiff coverage store, s3_url: {s3_url}  return value: {ret}")
+    if ('successful' in ret):  # coverage store successfully created
+        # now create (publish) layer based on this coveragestore
+        ret = geo.publish_s3cog_coverage(s3_url, store_name, workspace=worksp)
+
+        logger.debug(f"Attempted to add s3 geotiff layer, s3_url: {s3_url}  return value: {ret}")
+        if ('successful' in ret):  # layer successfully created (published)
+            # now we just need to tweak the layer title to make it more readable in Terria Map
+            title, meta_dict = update_layer_title(logger, geo, instance_id, worksp, store_name)
+
+            # set the default style for this layer - maxele style for now
+            style_name = "maxele_style"
+            geo.set_default_style(worksp, store_name, style_name)
+
+            # TODO: DO WE NEED THIS?
+            # update DB with url of layer for access from website NEED INSTANCE ID for this
+            # layer_url = f'{url}/{worksp}/wcs?service=WCS&version=1.1.1&request=DescribeCoverage&identifiers={worksp}:{store_name}'
+            # logger.debug(f"Adding coverage store to DB, instanceId: {instance_id} coveragestore url: {layer_url}")
+            # db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
+            # asgsdb = ASGS_DB(logger, db_name, instance_id)
+            # asgsdb.saveImageURL(file, layer_url)
+
+            # add this layer to the wms layer group dict
+            full_layername = f"{worksp}:{store_name}"
+            # now get create and info section for later use in the TerriaMap data catalog
+            info_dict = create_cat_info(meta_dict)
+            layergrp["wms"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict})
+
+    return layergrp
 
 
 def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemosaic_path, layergrp):
@@ -450,6 +491,11 @@ def main(args):
         return 1
     instance_id = args.instanceId.strip()
 
+    if args.HECRAS_URL:
+        hecras_url = args.HECRAS_URL.strip()
+    else:
+        hecras_url = None
+
     # collect needed info from env vars
     user = os.getenv('GEOSERVER_USER', 'user').strip()
     pswd = os.environ.get('GEOSERVER_PASSWORD', 'password').strip()
@@ -469,34 +515,37 @@ def main(args):
     # upload raster styles, if they don't already exist
     upload_styles(logger, geo)
 
-    # final dir path needs to be well defined
-    # dir structure looks like this: /data/<instance id>/mbtiles/<parameter name>.<zoom level>.mbtiles
-    final_path = f"{data_directory}/{instance_id}/final"
-    #mbtiles_path = final_path + "/mbtiles"
-    imagemosaic_path = final_path + "/cogeo"
-    shp_path = f"{data_directory}/{instance_id}/input/shapefiles"
+    if (hecras_url):
+        final_layergrp = add_s3_coveragestore(logger, geo, hecras_url, instance_id, worksp, layergrp)
+    else:
+        # final dir path needs to be well defined
+        # dir structure looks like this: /data/<instance id>/mbtiles/<parameter name>.<zoom level>.mbtiles
+        final_path = f"{data_directory}/{instance_id}/final"
+        #mbtiles_path = final_path + "/mbtiles"
+        imagemosaic_path = final_path + "/cogeo"
+        shp_path = f"{data_directory}/{instance_id}/input/shapefiles"
 
-    # add a coverage store to geoserver for each .mbtiles found in the staging dir
-    #new_layergrp = add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_path, layergrp)
-    new_layergrp = add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemosaic_path, layergrp)
-    # if add image mosaic failed exit program with an error
-    if(new_layergrp is None):
-        logger.info("Error encountered while loading image mosaic into GeoServer - program exiting")
-        raise SystemExit()
+        # add a coverage store to geoserver for each .mbtiles found in the staging dir
+        #new_layergrp = add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_path, layergrp)
+        new_layergrp = add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemosaic_path, layergrp)
+        # if add image mosaic failed exit program with an error
+        if(new_layergrp is None):
+            logger.info("Error encountered while loading image mosaic into GeoServer - program exiting")
+            raise SystemExit()
 
-    # now put NOAA OBS .csv file into geoserver
-    next_layergrp = add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host, new_layergrp)
-    if (new_layergrp is None):
-        logger.info("Error encountered while loading noaa observation layer into GeoServer - program exiting")
-        raise SystemExit()
+        # now put NOAA OBS .csv file into geoserver
+        next_layergrp = add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host, new_layergrp)
+        if (new_layergrp is None):
+            logger.info("Error encountered while loading noaa observation layer into GeoServer - program exiting")
+            raise SystemExit()
 
-    # check to see if this is a tropical storm, and if so, add storm related shapefiles to GeoServer
-    final_layergrp = add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, next_layergrp)
+        # check to see if this is a tropical storm, and if so, add storm related shapefiles to GeoServer
+        final_layergrp = add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, next_layergrp)
 
-    # finally copy all .png & .json files to the fileserver host to serve them from there
-    copy_pngs(logger, geoserver_host, geoserver_proj_path, instance_id, final_path)
-    copy_jsons(logger, geoserver_proj_path, instance_id, final_path)
-    copy_csvs(logger, geoserver_proj_path, instance_id, final_path)
+        # finally copy all .png & .json files to the fileserver host to serve them from there
+        copy_pngs(logger, geoserver_host, geoserver_proj_path, instance_id, final_path)
+        copy_jsons(logger, geoserver_proj_path, instance_id, final_path)
+        copy_csvs(logger, geoserver_proj_path, instance_id, final_path)
 
     # update TerriaMap data catalog
     #tc = TerriaCatalog(data_directory, geoserver_host, pswd)
@@ -513,6 +562,7 @@ if __name__ == '__main__':
     from argparse import ArgumentParser
     parser = ArgumentParser(description=main.__doc__)
     parser.add_argument('--instanceId', default=None, help='instance id of db entry for this model run', type=str)
+    parser.add_argument('--HECRAS_URL', default=None, help='link to COG GeoTIFF in s3 indicating this is a HEC/RAS model run', type=str)
 
     args = parser.parse_args()
 
