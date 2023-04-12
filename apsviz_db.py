@@ -153,18 +153,20 @@ class APSVIZ_DB:
         except Exception as e:
             self.logger.error(f'Error detected creating new catalog. {e}')
 
+
     # stored proc looks like this:
     # insert_catalog_member(_catalog_id text, _grid_type text, _event_type text, _instance_name text, _run_date date, _member_def json,
     # _met_class text DEFAULT ''::text, _storm_name text DEFAULT ''::text, _cycle text DEFAULT ''::text, _advisory_number text DEFAULT ''::text,
-    # _member_id text DEFAULT NULL::text, _group_id integer DEFAULT NULL::integer) returns integer
-    def add_cat_item(self, grid_type, event_type, run_date, instance_name, member_json, met_class, storm_name, cycle, advisory):
-        self.logger.info(f'APSVIZ_DB: Creating new catalog member, grid_type:{grid_type} event_type:{event_type} run_date:{run_date} instance_name:{instance_name} met_class:{met_class} storm_name:{storm_name} cycle:{cycle} advisory{advisory}')
+    # _member_id text DEFAULT NULL::text, _project_code text DEFAULT ''::text, _product_type text DEFAULT ''::text, _group_id integer DEFAULT NULL::integer) returns integer
+
+    def add_cat_item(self, grid_type, event_type, run_date, instance_name, member_json, met_class, storm_name, cycle, advisory, project_code, product_type):
+        self.logger.info(f'APSVIZ_DB: Creating new catalog member, grid_type:{grid_type} event_type:{event_type} run_date:{run_date} instance_name:{instance_name} met_class:{met_class} storm_name:{storm_name} cycle:{cycle} advisory:{advisory} , project_code:{project_code}, product_type:{product_type}')
 
         # convert json to a string for DB
         member_str = json.dumps(member_json)
 
         # now add new catalog entry
         try:
-            self.cursor.callproc('insert_catalog_member', (run_date, grid_type, event_type, instance_name, run_date, member_str, met_class, storm_name, cycle, advisory))
+            self.cursor.callproc('insert_catalog_member', (run_date, grid_type, event_type, instance_name, run_date, member_str, met_class, storm_name, cycle, advisory, project_code, product_type))
         except Exception as e:
             self.logger.error(f'Error detected creating new catalog member. {e}')

@@ -42,6 +42,7 @@ def create_cat_info(meta_dict):
     # added for PSC
     info_dict.update({"advisory": meta_dict['advisory']})
     info_dict.update({"ensemble_member": meta_dict['asgs.enstorm']})
+    info_dict.update({"project_code": meta_dict['suite.project_code']})
 
     return info_dict
 
@@ -125,7 +126,7 @@ def add_s3_coveragestore(logger, geo, s3_url, instance_id, worksp, layergrp):
             full_layername = f"{worksp}:{store_name}"
             # now get create and info section for later use in the TerriaMap data catalog
             info_dict = create_cat_info(meta_dict)
-            layergrp["wms"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict})
+            layergrp["wms"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict, "project_code": meta_dict['suite.project_code'], "product_type": "hec_ras_water_surface"})
 
     return layergrp
 
@@ -172,7 +173,9 @@ def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemo
             full_layername = f"{worksp}:{layer_name}"
             # now get create and info section for later use in the TerriaMap data catalog
             info_dict = create_cat_info(meta_dict)
-            layergrp["wms"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict})
+            # get product name (type) from file name
+            product_type = os.path.splitext(file)[0]
+            layergrp["wms"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict, "project_code": meta_dict['suite.project_code'], "product_type": product_type})
 
         else:
             return None
@@ -290,7 +293,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
         full_layername = f"{worksp}:{name}"
         # now get create and info section for later use in the TerriaMap data catalog
         info_dict = create_cat_info(meta_dict)
-        layergrp["wfs"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict})
+        layergrp["wfs"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict, "project_code": meta_dict['suite.project_code'], "product_type": "obs"})
 
     return layergrp
 

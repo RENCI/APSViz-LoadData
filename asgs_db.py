@@ -100,6 +100,7 @@ class ASGS_DB:
             'currentdate': '',
             'currentcycle': '',
             'advisory': '',
+            'suite.project_code': '',
             'forcing.stormname': '',
             'forcing.metclass': '',
             'forcing.nwp.model': '',
@@ -126,6 +127,8 @@ class ASGS_DB:
              e = sys.exc_info()[0]
              self.logger.error(f"FAILURE - Cannot retrieve run properties metadata from ASGS_DB. error {e}")
         finally:
+            if(len(metadata_dict['suite.project_code']) < 1):
+                metadata_dict['suite.project_code'] = 'asgs'
             return metadata_dict
 
     # find the stationProps.csv file and insert the contents
