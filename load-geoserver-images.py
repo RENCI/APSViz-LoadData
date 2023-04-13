@@ -80,8 +80,9 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name):
     title = "N/A"
     if (meta_dict['forcing.metclass'] == 'synoptic'):
         title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
-    else:
-        title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
+    else: # tropical
+        title = f"Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
+        # title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
     logger.debug(f"setting this coverage: {layer_name} to {title}")
 
     geo.set_coverage_title(worksp, layer_name, layer_name, title)
@@ -282,8 +283,9 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
                 run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
         if (meta_dict['forcing.metclass'] == 'synoptic'):
             title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
-        else:
-            title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
+        else: # tropical
+            # title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
+            title = f"NOAA Observations - Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
         geo.publish_featurestore_sqlview(name, title, store_name, sql, key_column='gid', geom_name='the_geom', geom_type='Geometry', workspace=worksp)
 
         # now set the default style
