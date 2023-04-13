@@ -580,6 +580,8 @@ class TerriaCatalogDB:
             advisory = ''
         storm_name = self.getStormName(name)
         cycle = self.getCycle(name)
+        if (len(cycle) < 1):
+            cycle = advisory
 
         self.apsviz_db.add_cat_item(grid_type, event_type, run_date, instance_name, wms_item, metclass, storm_name, cycle, advisory, project_code, product_type)
 
@@ -625,6 +627,8 @@ class TerriaCatalogDB:
             advisory = ''
         storm_name = self.getStormName(name)
         cycle = self.getCycle(name)
+        if (len(cycle) < 1):
+            cycle = advisory
 
         self.apsviz_db.add_cat_item(grid_type, event_type, run_date, instance_name, wfs_item, metclass, storm_name, cycle, advisory, project_code, product_type)
 
@@ -671,14 +675,14 @@ class TerriaCatalogDB:
         # next take care of the WMS layers
         for wms_layer_dict in layergrp["wms"]:
             item_id = self.add_wms_item(wms_layer_dict["metclass"], wms_layer_dict["title"], wms_layer_dict["layername"], wms_layer_dict["info"], wms_layer_dict["project_code"], wms_layer_dict["product_type"])
-            if (("maxele" in wms_layer_dict["layername"]) and ("ec95d" in wms_layer_dict["title"])):
+            if ("maxele" in wms_layer_dict["layername"]):
                 latest_layer_ids.append(item_id)
         # now do WFS layers
         for wfs_layer_dict in layergrp["wfs"]:
             item_id = self.add_wfs_item(wfs_layer_dict["metclass"], wfs_layer_dict["title"], wfs_layer_dict["layername"], wfs_layer_dict["info"], wfs_layer_dict["project_code"], wfs_layer_dict["product_type"])
-            if ("ec95d" in wfs_layer_dict["title"]):
-                # put this layer on top
-                latest_layer_ids.insert(0, item_id)
+            # if ("ec95d" in wfs_layer_dict["title"]):
+            # put this layer on top
+            latest_layer_ids.insert(0, item_id)
 
         self.update_latest_results(latest_layer_ids)
 
