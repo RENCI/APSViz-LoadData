@@ -170,3 +170,21 @@ class APSVIZ_DB:
             self.cursor.callproc('insert_catalog_member', (run_date, grid_type, event_type, instance_name, run_date, member_str, met_class, storm_name, cycle, advisory, project_code, product_type))
         except Exception as e:
             self.logger.error(f'Error detected creating new catalog member. {e}')
+
+    # check to see if a tropical run already exists for a given date
+    def get_tropical_run(self, run_date):
+        self.logger.info(f'APSVIZ_DB: retrieving tropical run ids for given date, run_date: {run_date}')
+        tropical_member_ids = []
+
+        try:
+            self.cursor.callproc('get_tropical_member_id', (run_date, ))
+            ret = self.cursor.fetchone()
+            if ret:
+                self.logger.debug(f"value returned is: {ret}")
+                tropical_member_ids = ret[0]
+
+        except Exception as e:
+            self.logger.error(f'Error retrieving any tropical runs for today. {e}')
+
+        self.logger.debug(f'returning ret={ret}')
+        return tropical_member_ids

@@ -439,15 +439,30 @@ class TerriaCatalogDB:
 
         return info
 
+        # should only need to update workbench array in the catalog group.
+        # select value from "ASGS_Mon_config_item" where uid like '2022070712-%' and key='adcirc.gridname';
 
-    # should only need to update workbench array in the catalog group.
-    # select value from "ASGS_Mon_config_item" where uid like '2022070712-%' and key='adcirc.gridname';
-    def update_latest_results(self, latest_layer_ids):
+    def update_latest_results(self, latest_layer_ids, metclass):
+        self.logger.info(f'latest_layer_ids:{latest_layer_ids} metclass:{metclass}')
 
-        self.logger.info(f'latest_layer_ids: {latest_layer_ids}')
+        # if this is not tropical run, just and see if the last tropical run takes prority
+        if (metclass != 'tropical'):
+            # check to see if there is already a tropical run for today
+            todays_date = datetime.utcnow().strftime('%Y-%m-%d')
+            self.logger.debug(f'todays_date:{todays_date}')
+            member_ids = self.apsviz_db.get_tropical_run(todays_date)
+            self.logger.debug(f'member_ids:{member_ids}')
+            # are there any tropical runs already existing today?
+            # if not, go ahead and add this run to the workbench
+            # else just skip update of workbench
+            if (member_ids is None):
+                if (len(latest_layer_ids) > 0):
+                    self.apsviz_db.update_workbench(latest_layer_ids)
 
-        if (len(latest_layer_ids) > 0):
-            self.apsviz_db.update_workbench(latest_layer_ids)
+        # if this is a tropical run, just put these layers in the workbench
+        else:
+            if (len(latest_layer_ids) > 0):
+                self.apsviz_db.update_workbench(latest_layer_ids)
 
 
     # create a new catalog group for a new day.
@@ -667,6 +682,7 @@ class TerriaCatalogDB:
         self.logger.info(f'layergrp: {layergrp}')
         # make array to save latest results maxele layer and noaa obs layer
         latest_layer_ids = []
+        metclass = ""
 
         # do nhc storm layers if any
         for nhc_layer_dict in layergrp["nhc"]:
@@ -677,6 +693,7 @@ class TerriaCatalogDB:
             item_id = self.add_wms_item(wms_layer_dict["metclass"], wms_layer_dict["title"], wms_layer_dict["layername"], wms_layer_dict["info"], wms_layer_dict["project_code"], wms_layer_dict["product_type"])
             if ("maxele" in wms_layer_dict["layername"]):
                 latest_layer_ids.append(item_id)
+                metclass = wms_layer_dict["metclass"]
         # now do WFS layers
         for wfs_layer_dict in layergrp["wfs"]:
             item_id = self.add_wfs_item(wfs_layer_dict["metclass"], wfs_layer_dict["title"], wfs_layer_dict["layername"], wfs_layer_dict["info"], wfs_layer_dict["project_code"], wfs_layer_dict["product_type"])
@@ -684,7 +701,7 @@ class TerriaCatalogDB:
             # put this layer on top
             latest_layer_ids.insert(0, item_id)
 
-        self.update_latest_results(latest_layer_ids)
+        self.update_latest_results(latest_layer_ids, metclass)
 
         # now delete the groups older than 14 days
         #self.rm_oldest_groups()
