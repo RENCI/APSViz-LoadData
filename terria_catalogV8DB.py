@@ -166,6 +166,12 @@ class TerriaCatalogDB:
         '"dataCustodian": "RENCI",' \
         '"type": "wms",' \
         '"layers": "layers",' \
+        '"legends": [' \
+            '{' \
+                '"url": "url",' \
+                '"urlMimeType": "image/png"' \
+            '}' \
+        '],' \
         '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms",' \
         '"featureInfoTemplate": {' \
             '"template": "<div class=\u2019stations\u2019><p><h3>{{stationname}}, {{state}}</h3></p><chart sources=\u0027{{csvurl}}\u0027 column-units=\u0027Forecast:Meters,Nowcast:Meters,NOAA NOS:Meters,NOAA Tidal:Meters,Difference:Meters\u0027 column-titles=\u0027Forecast:Forecast,NOAA NOS:NOAA NOS,NOAA Tidal:NOAA Tidal\u0027 title=\u0027{{stationname}}\u0027></chart></div>"' \
@@ -261,6 +267,18 @@ class TerriaCatalogDB:
 
         # need to use geoserver provided legend, but make it horizontal and transparent
         legend_url = f"{self.geoserver_url}/{workspace}/ows?service=WMS&request=GetLegendGraphic&TRANSPARENT=TRUE&LEGEND_OPTIONS=layout:horizontal&format=image%2Fpng&width=20&height=20&layer={layer_name}"
+
+        return legend_url
+
+    def create_wfs_legend_url(self, layers):
+
+        self.logger.debug(f'layers: {layers}')
+        parts1 = layers.split(':')
+        workspace = parts1[0]
+        layer_name = parts1[1]
+
+        # need to use geoserver provided legend, but make the text black instead of white
+        legend_url = f"{self.geoserver_url}/{workspace}/ows?service=WMS&request=GetLegendGraphic&TRANSPARENT=TRUE&format=image%2Fpng&LEGEND_OPTIONS=fontColor:0x000000&layer={layer_name}"
 
         return legend_url
 
@@ -498,7 +516,8 @@ class TerriaCatalogDB:
                              show,
                              name,
                              type_names,
-                             url):
+                             url,
+                             legend_url):
         wfs_item = {}
         wfs_item = json.loads(self.cat_wfs_item)
         wfs_item["id"] = item_id
@@ -506,6 +525,7 @@ class TerriaCatalogDB:
         wfs_item["name"] = name
         wfs_item["layers"] = type_names
         wfs_item["url"] = url
+        wfs_item["legends"][0]["url"] = legend_url
 
         return wfs_item
 
@@ -620,6 +640,11 @@ class TerriaCatalogDB:
             url = f"{self.geoserver_url}/{self.geo_workspace}/wfs/{self.geo_workspace}?service=wfs&version=1.3.0&request=GetCapabilities"
         self.logger.debug(f'url: {url}')
 
+        # create url for legend
+        legend_url = "N/A"
+        legend_url = self.create_wfs_legend_url(typeNames)
+        self.logger.debug(f'legend_url: {legend_url}')
+
         # add to correct catalog date group, if that group does not exist, create a new one
         date_str = self.get_datestr_from_title(name)
         # check to see if this catalog group already exists
@@ -627,7 +652,7 @@ class TerriaCatalogDB:
             # create new group
             self.create_cat_group(date_str)
 
-        wfs_item = self.create_wfs_data_item(item_id, show, name, typeNames, url)
+        wfs_item = self.create_wfs_data_item(item_id, show, name, typeNames, url, legend_url)
         info = self.update_item_info(wfs_item["info"], wfs_info)
         wfs_item["info"] = info
 
