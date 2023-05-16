@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 from terria_catalogV8DB import TerriaCatalogDB
 from asgs_db import ASGS_DB
 from zipfile import ZipFile
+from general_utils import GeneralUtils
 
 
 # format raw date from DB
@@ -250,52 +251,61 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
     style_name = "observations_style_v2"
 
     logger.debug(f"csv_file_path: {csv_file_path} store name: {store_name}")
+    logger.debug(f"checking to see if {csv_file_path} exists")
 
-    # get asgs db connection
-    asgs_obsdb = ASGS_DB(logger, dbname, instance_id)
-    # save stationProps file to db
-    try: # make sure this completes before moving on - observations may not exist for this grid
-        asgs_obsdb.insert_station_props(logger, geo, worksp, csv_file_path, geoserver_host)
-    except (IOError, OSError):
-        e = sys.exc_info()[0]
-        logger.warning(f"WARNING - Cannot save station data in {dbname} DB. Error: {e}")
-        #return layergrp
+    # check to see if stationProps.csv file exists, if so, create jndi feature layer
+    if os.path.isfile(csv_file_path):
+        # get asgs db connection
+        asgs_obsdb = ASGS_DB(logger, dbname, instance_id)
+        # save stationProps file to db
+        try: # make sure this completes before moving on - observations may not exist for this grid
+            asgs_obsdb.insert_station_props(logger, geo, worksp, csv_file_path, geoserver_host)
+        except (IOError, OSError):
+            e = sys.exc_info()[0]
+            logger.warning(f"WARNING - Cannot save station data in {dbname} DB. Error: {e}")
+            # TODO: Should it be returning here? return layergrp
 
-    # ... using pre-defined postgresql JNDI feature store in Geoserver
-    ret = geo.create_jndi_featurestore(store_name, worksp, overwrite=False)
-    if ret is None: # successful
+        # ... using pre-defined postgresql JNDI feature store in Geoserver
+        ret = geo.create_jndi_featurestore(store_name, worksp, overwrite=False)
+        if ret is None: # successful
 
-        logger.info(f"Added JNDI featurestore: {store_name}")
-        # now publish this layer with an SQL filter based on instance_id
-        sql = f"select * from stations where instance_id='{instance_id}'"
-        name = f"{instance_id}_station_properies_view"
+            logger.info(f"Added JNDI featurestore: {store_name}")
+            # now publish this layer with an SQL filter based on instance_id
+            sql = f"select * from stations where instance_id='{instance_id}'"
+            name = f"{instance_id}_station_properies_view"
 
-        # TODO probably need to update this name - 5/21/21 - okay updated ...
-        #  but maybe need to make this a little less messy
-        db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-        asgsdb = ASGS_DB(logger, db_name, instance_id)
-        meta_dict = asgsdb.getRunMetadata()
-        raw_date = meta_dict['currentdate']
-        if raw_date:
-            # raw date format is YYMMDD
-            date_list = [raw_date[i:i + 2] for i in range(0, len(raw_date), 2)]
-            if len(date_list) == 3:
-                run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
-        if (meta_dict['forcing.metclass'] == 'synoptic'):
-            title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
-        else: # tropical
-            # title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
-            title = f"NOAA Observations - Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
-        geo.publish_featurestore_sqlview(name, title, store_name, sql, key_column='gid', geom_name='the_geom', geom_type='Geometry', workspace=worksp)
+            # TODO probably need to update this name - 5/21/21 - okay updated ...
+            #  but maybe need to make this a little less messy
+            db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
+            asgsdb = ASGS_DB(logger, db_name, instance_id)
+            meta_dict = asgsdb.getRunMetadata()
+            raw_date = meta_dict['currentdate']
+            if raw_date:
+                # raw date format is YYMMDD
+                date_list = [raw_date[i:i + 2] for i in range(0, len(raw_date), 2)]
+                if len(date_list) == 3:
+                    run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
+            if (meta_dict['forcing.metclass'] == 'synoptic'):
+                title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
+            else: # tropical
+                # title = f"NOAA Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
+                title = f"NOAA Observations - Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
+            geo.publish_featurestore_sqlview(name, title, store_name, sql, key_column='gid', geom_name='the_geom', geom_type='Geometry', workspace=worksp)
 
-        # now set the default style
-        geo.set_default_style(worksp, name, style_name)
+            # now set the default style
+            geo.set_default_style(worksp, name, style_name)
 
-        # add this layer to the wfs layer group dict
-        full_layername = f"{worksp}:{name}"
-        # now get create and info section for later use in the TerriaMap data catalog
-        info_dict = create_cat_info(meta_dict)
-        layergrp["wfs"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict, "project_code": meta_dict['suite.project_code'], "product_type": "obs"})
+            # add this layer to the wfs layer group dict
+            full_layername = f"{worksp}:{name}"
+            # now get create and info section for later use in the TerriaMap data catalog
+            info_dict = create_cat_info(meta_dict)
+            layergrp["wfs"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict, "project_code": meta_dict['suite.project_code'], "product_type": "obs"})
+
+    else:
+        logger.info(f"Observations config file:{csv_file_path} does not exist. Skipping creation of obs/mod layer")
+        utils = GeneralUtils(logger)
+        msg = f"Error encountered with instance id: {instance_id}. Did not create Observations layer because the station properties config file: {csv_file_path} was not found"
+        utils.send_slack_msg(msg, utils.slack_channels('slack_issues_channel'))
 
     return layergrp
 
