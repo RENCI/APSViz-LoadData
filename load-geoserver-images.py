@@ -305,7 +305,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
         logger.info(f"Observations config file:{csv_file_path} does not exist. Skipping creation of obs/mod layer")
         utils = GeneralUtils(logger)
         msg = f"Error encountered with instance id: {instance_id}. Did not create Observations layer because the station properties config file: {csv_file_path} was not found"
-        utils.send_slack_msg(msg, utils.slack_channels('slack_issues_channel'))
+        utils.send_slack_msg(msg, 'slack_issues_channel')
 
     return layergrp
 

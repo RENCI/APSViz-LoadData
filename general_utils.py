@@ -15,28 +15,18 @@ import os
 
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-from src.common.logger import LoggingUtil
 
 
 class GeneralUtils:
     """
     Utility methods used for components in this project.
     """
-    def __init__(self, _logger=None):
+    def __init__(self, _logger):
         """
         Initializes this class
 
         """
-        # if a reference to a logger passed in use it
-        if _logger is not None:
-            # get a handle to a logger
-            self.logger = _logger
-        else:
-            # get the log level and directory from the environment.
-            log_level, log_path = LoggingUtil.prep_for_logging()
-
-            # create a logger
-            self.logger = LoggingUtil.init_logging("APSVIZ.Archiver.GeneralUtils", level=log_level, line_format='medium', log_file_path=log_path)
+        self.logger = _logger
 
         # init the Slack channels
         self.slack_channels: dict = {'slack_status_channel': os.getenv('SLACK_STATUS_CHANNEL'),
