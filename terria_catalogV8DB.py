@@ -320,7 +320,8 @@ class TerriaCatalogDB:
     # create a unique id for this catalog item
     # looks like this: 4007-2022050212-namforecast-maxele
     # layername looks like this: ADCIRC_2021:4007-2022050212-namforecast_maxele63
-    def create_cat_itemid(self, layername, type):
+    # example for Kalpana layers: ADCIRC_2023:4381-2023052412-namforecast_maxele_level_downscaled_epsg4326
+    def create_cat_itemid(self, layername, type, kalpana=False):
         self.logger.debug(f'layername: {layername}  type: {type:}')
         item_id = ""
 
@@ -340,9 +341,13 @@ class TerriaCatalogDB:
 
         # if type=wms, get param name, otherwise assume "obs"
         if (type == "wms"):
-            # have this in str1[2]: namforecast_maxele63
             str1 = str1[2].split('_')
-            id_pc2 = f"{str1[0]}-{str1[1]}"
+            if (kalpana):
+                # have this in str1: ['namforecast', 'maxele', 'level', 'downscaled', 'epsg4326']
+                id_pc2 = f"{str1[0]}-{str1[1]}_{str1[2]}_{str1[3]}"
+            else:
+                # have this in str1[2]: namforecast_maxele63
+                id_pc2 = f"{str1[0]}-{str1[1]}"
         elif (type == "wfs"):
             # have this in str1[2]: nowcast_station_properies_view
             id_pc2 = f"{str1[2].split('_')[0]}-obs"
@@ -393,7 +398,7 @@ class TerriaCatalogDB:
         elif self.SWAN_STYLE in layername:
             return f'{self.SWAN_STYLE}_env__style'
         else:
-            return f'{self.MAXELE_STYLE}_env_style'
+            return f'{self.MAXELE_STYLE}_env_style_v2'
 
 
     # create an info section for this group item
@@ -575,6 +580,7 @@ class TerriaCatalogDB:
                     wms_info,
                     project_code,
                     product_type,
+                    kalpana,
                     url=None,
                     show=True):
 
@@ -584,7 +590,7 @@ class TerriaCatalogDB:
         legend_url= "N/A"
         legend_url= self.create_legend_url(layers)
         self.logger.debug(f'legend_url: {legend_url}')
-        item_id = self.create_cat_itemid(layers, "wms")
+        item_id = self.create_cat_itemid(layers, "wms", kalpana)
         self.logger.debug(f'id: {item_id}')
         if (url is None):
             url = f"{self.geoserver_url}/{self.geo_workspace}/wms/{self.geo_workspace}?service=wms&version=1.3.0&request=GetCapabilities"
@@ -715,7 +721,7 @@ class TerriaCatalogDB:
 
         # next take care of the WMS layers
         for wms_layer_dict in layergrp["wms"]:
-            item_id = self.add_wms_item(wms_layer_dict["metclass"], wms_layer_dict["title"], wms_layer_dict["layername"], wms_layer_dict["info"], wms_layer_dict["project_code"], wms_layer_dict["product_type"])
+            item_id = self.add_wms_item(wms_layer_dict["metclass"], wms_layer_dict["title"], wms_layer_dict["layername"], wms_layer_dict["info"], wms_layer_dict["project_code"], wms_layer_dict["product_type"], kalpana=wms_layer_dict["kalpana"])
             if ("maxele" in wms_layer_dict["layername"]):
                 latest_layer_ids.append(item_id)
                 metclass = wms_layer_dict["metclass"]

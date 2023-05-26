@@ -69,7 +69,7 @@ def upload_styles(logger, geo):
             geo.upload_style(f"./styles/{style}")
 
 # tweak the layer title to make it more readable in Terria Map
-def update_layer_title(logger, geo, instance_id, worksp, layer_name):
+def update_layer_title(logger, geo, instance_id, worksp, layer_name, kalpana=False):
     logger.info(f"instance_id: {instance_id} layer_name: {layer_name}")
     run_date = ''
     # first get metadata from this model run
@@ -77,12 +77,16 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name):
     asgsdb = ASGS_DB(logger, db_name, instance_id)
     meta_dict = asgsdb.getRunMetadata()
     run_date = format_raw_date(meta_dict['currentdate'])
+    if (kalpana):
+        title_layer_name = layer_name
+    else:
+        title_layer_name = layer_name.split('_')[1]
 
     title = "N/A"
     if (meta_dict['forcing.metclass'] == 'synoptic'):
-        title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
+        title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({title_layer_name})"
     else: # tropical
-        title = f"Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
+        title = f"Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({title_layer_name})"
         # title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
     logger.debug(f"setting this coverage: {layer_name} to {title}")
 
@@ -160,6 +164,8 @@ def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemo
             # set the default style for this layer
             if "swan" in layer_name:
                 style_name = f"{layer_name.split('_')[1]}_style"
+            elif "maxele in layer_name":
+                style_name = f"{layer_name.split('_')[1][:-2]}_style_v2"
             else:
                 style_name = f"{layer_name.split('_')[1][:-2]}_style"
             geo.set_default_style(worksp, layer_name, style_name)
@@ -177,12 +183,66 @@ def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemo
             info_dict = create_cat_info(meta_dict)
             # get product name (type) from file name
             product_type = os.path.splitext(file)[0]
-            layergrp["wms"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict, "project_code": meta_dict['suite.project_code'], "product_type": product_type})
+            layergrp["wms"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict, "project_code": meta_dict['suite.project_code'], "product_type": product_type, "kalpana": False})
 
         else:
             return None
 
     return layergrp
+
+def add_kalpana_coveragestore(logger, geo, url, instance_id, worksp, kalpana_path, layergrp):
+    # format of mbtiles is ex: maxele.63.0.9.mbtiles
+    # pull out meaningful pieces of file name
+    # get all files in mbtiles dir and loop through
+    logger.info(f"instance_id: {instance_id} kalpana_path: {kalpana_path}")
+
+    if (os.path.exists(kalpana_path)):
+        for file in fnmatch.filter(os.listdir(kalpana_path), '*.tif'):
+            file_path = f"{kalpana_path}/{file}"
+            logger.debug(f"add_kalpana_coveragestore: file={file_path}")
+            layer_name = str(instance_id) + "_" + os.path.splitext(file)[0]
+            logger.info(f'Adding layer: {layer_name} into workspace: {worksp}')
+
+            # create coverage store and associate with .tif file
+            # also creates layer
+            ret = geo.create_coveragestore(lyr_name=layer_name,
+                                        path=file_path,
+                                        workspace=worksp,
+                                        file_type='geotiff')
+            logger.debug(f"Attempted to add tiff coverage store, file path: {file_path}  return value: {ret}")
+            if (ret is None):  # coverage store successfully created
+                # now we just need to tweak the layer title to make it more
+                # readable in Terria Map
+                # example layer_name: 4381-2023052412-namforecast-maxele_level_downscaled_epsg4326
+                # make a different layer name for the kalpana title
+                layername_split = layer_name.split('-')
+                # now layername_split is: ['4381', '2023052412', 'namforecast_maxele_level_downscaled_epsg4326']
+                title_layer_name = layername_split[2].split('_')[1] + "_high_res"
+                title, meta_dict = update_layer_title(logger, geo, instance_id, worksp, title_layer_name, kalpana=True)
+
+                # set the default style for this layer
+                geo.set_default_style(worksp, layer_name, 'maxele_env_style_v2')
+
+                # update DB with url of layer for access from website NEED INSTANCE ID for this
+                layer_url = f'{url}/{worksp}/wcs?service=WCS&version=1.1.1&request=DescribeCoverage&identifiers={worksp}:{layer_name}'
+                logger.debug(f"Adding coverage store to DB, instanceId: {instance_id} coveragestore url: {layer_url}")
+                db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
+                asgsdb = ASGS_DB(logger, db_name, instance_id)
+                asgsdb.saveImageURL(file, layer_url)
+
+                # add this layer to the wms layer group dict
+                full_layername = f"{worksp}:{layer_name}"
+                # now get create and info section for later use in the TerriaMap data catalog
+                info_dict = create_cat_info(meta_dict)
+                # get product name (type) from file name
+                product_type = os.path.splitext(file)[0]
+                layergrp["wms"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict, "project_code": meta_dict['suite.project_code'], "product_type": product_type, "kalpana": True})
+
+            else:
+                return None
+
+    return layergrp
+
 
 # add a coverage store to geoserver for each .mbtiles found in the staging dir
 def add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_path, layergrp):
@@ -225,18 +285,6 @@ def add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_pa
 
     return layergrp
 
-
-# add a datastore in geoserver for the stationProps.csv file
-# as of 4/8/21 this feature is broken in GeoServer so going to
-# add a DB datastore for this data
-'''
-def add_props_datastore(logger, geo, instance_id, worksp, final_path):
-    #stations_filename = "stationProps.csv"
-    #insets_path = f"{final_path}/insets/{stations_filename}"
-    #store_name = str(instance_id) + "_station_props"
-    #ret = geo.create_datastore(name=store_name, path=insets_path, workspace=worksp)
-    #logger.debug(f"Attempted to add data store, file path: {insets_path}  return value: {ret}")
-'''
 
 # add a datastore in geoserver for the stationProps.csv file
 def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host, layergrp):
@@ -538,11 +586,18 @@ def main(args):
         final_path = f"{data_directory}/{instance_id}/final"
         #mbtiles_path = final_path + "/mbtiles"
         imagemosaic_path = final_path + "/cogeo"
+        kalpana_path = final_path + "/kalpana"
         shp_path = f"{data_directory}/{instance_id}/input/shapefiles"
 
-        # add a coverage store to geoserver for each .mbtiles found in the staging dir
+        # add a coverage store for any kalpana tiffs
+        kalpana_layergrp = add_kalpana_coveragestore(logger, geo, url, instance_id, worksp, kalpana_path, layergrp)
+        if (kalpana_layergrp is None):
+            logger.info("Error encountered while loading kalpana image into GeoServer - program exiting")
+            raise SystemExit()
+
+        # add a coverage store to geoserver for each .zip found in the staging dir
         #new_layergrp = add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_path, layergrp)
-        new_layergrp = add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemosaic_path, layergrp)
+        new_layergrp = add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemosaic_path, kalpana_layergrp)
         # if add image mosaic failed exit program with an error
         if(new_layergrp is None):
             logger.info("Error encountered while loading image mosaic into GeoServer - program exiting")
