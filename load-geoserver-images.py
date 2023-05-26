@@ -163,11 +163,11 @@ def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemo
 
             # set the default style for this layer
             if "swan" in layer_name:
-                style_name = f"{layer_name.split('_')[1]}_style"
-            elif "maxele in layer_name":
-                style_name = f"{layer_name.split('_')[1][:-2]}_style_v2"
+                style_name = f"{layer_name.split('_')[1]}_env_style"
+            elif "maxele" in layer_name:
+                style_name = f"{layer_name.split('_')[1][:-2]}_env_style_v2"
             else:
-                style_name = f"{layer_name.split('_')[1][:-2]}_style"
+                style_name = f"{layer_name.split('_')[1][:-2]}_env_style"
             geo.set_default_style(worksp, layer_name, style_name)
 
             # update DB with url of layer for access from website NEED INSTANCE ID for this
