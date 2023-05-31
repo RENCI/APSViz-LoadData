@@ -152,9 +152,20 @@ class ASGS_DB:
         #try: catch this exception in calling program instead
         with open(csv_file_path, 'r') as f:
             reader = csv.reader(f)
-            next(reader)  # Skip the header row.
-            for row in reader:
+            header = next(reader)  # Skip the header row.
+            for index, row in enumerate(reader):
                 try:
+                    # check the row. columns that have missing data are returned
+                    no_cols_data_msg: str = self.valid_csv_row(header, row, [5])
+
+                    # if there was missing data log it
+                    if no_cols_data_msg:
+                        # log the failed columns
+                        logger.error("Row %s had missing column data. Columns:", index+2, no_cols_data_msg)
+
+                        # no need to process this row
+                        continue
+
                     logger.debug(f"opened csv file - saving this row to db: {row}")
                     filename = os.path.basename(row[6])
                     png_url = f"{host}/obs_pngs/{self.instanceId}/{filename}"
@@ -170,3 +181,32 @@ class ASGS_DB:
                     raise IOError
 
         self.conn.commit()
+
+    @staticmethod
+    def valid_csv_row(header: list, row: list, optional=None) -> str:
+        """
+        Checks the data list to make sure there are values in each required element
+        and log the missing data entry.
+
+        :param header: The CSV data header
+        :param row: The list of data
+        :param optional: The list of indexes that are optional
+
+        :return: A comma delimited string of the errant columns
+        """
+        # init the return
+        no_data_col: list = []
+
+        # if there are no optional values passed in just create an empty list
+        if optional is None:
+            optional = []
+
+        # for each element in the row
+        for index, value in enumerate(row):
+            # is this a required value and doesn't have data
+            if index not in optional and (value is None or len(value) == 0):
+                # append the column to the list
+                no_data_col.append(header[index])
+
+        # return the failed cols
+        return ','.join(no_data_col)
