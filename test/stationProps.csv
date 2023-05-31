@@ -1,0 +1,116 @@
+StationId,StationName,State,Lat,Lon,Node,Filename,Type
+2695540,"Bermuda, St. Georges Island",Bermuda,32.373306,-64.703306,63_1419123,/data/4381-2023053106-namforecast/final/insets/2695540_WL.png,WATER_LEVEL
+8410140,Eastport,ME,44.904598,-66.982903,63_919953,/data/4381-2023053106-namforecast/final/insets/8410140_WL.png,WATER_LEVEL
+8418150,Portland,ME,43.65806,-70.24417,63_1045928,/data/4381-2023053106-namforecast/final/insets/8418150_WL.png,WATER_LEVEL
+8443970,Boston,MA,42.3539,-71.05028,63_914725,/data/4381-2023053106-namforecast/final/insets/8443970_WL.png,WATER_LEVEL
+8452660,Newport,RI,41.504333,-71.326139,63_1660860,/data/4381-2023053106-namforecast/final/insets/8452660_WL.png,WATER_LEVEL
+8454000,Providence,RI,41.807167,-71.400667,63_893811,/data/4381-2023053106-namforecast/final/insets/8454000_WL.png,WATER_LEVEL
+8467150,Bridgeport,CT,41.175819,-73.183969,63_255284,/data/4381-2023053106-namforecast/final/insets/8467150_WL.png,WATER_LEVEL
+8510560,Montauk,NY,41.048333,-71.959444,63_1084514,/data/4381-2023053106-namforecast/final/insets/8510560_WL.png,WATER_LEVEL
+8518750,The Battery,NY,40.700556,-74.014167,63_1228324,/data/4381-2023053106-namforecast/final/insets/8518750_WL.png,WATER_LEVEL
+8531680,Sandy Hook,NJ,40.466833,-74.009389,63_1336542,/data/4381-2023053106-namforecast/final/insets/8531680_WL.png,WATER_LEVEL
+8555889,Brandywine Shoal Light,DE,38.987,-75.113,63_1416929,/data/4381-2023053106-namforecast/final/insets/8555889_WL.png,WATER_LEVEL
+8557380,Lewes,DE,38.782833,-75.119278,63_1452338,/data/4381-2023053106-namforecast/final/insets/8557380_WL.png,WATER_LEVEL
+8570283,Ocean City Inlet,MD,38.328267,-75.091086,63_1501501,/data/4381-2023053106-namforecast/final/insets/8570283_WL.png,WATER_LEVEL
+8571892,Cambridge,MD,38.5725,-76.061667,63_1606888,/data/4381-2023053106-namforecast/final/insets/8571892_WL.png,WATER_LEVEL
+8574680,Baltimore,MD,39.266944,-76.579444,63_1613973,/data/4381-2023053106-namforecast/final/insets/8574680_WL.png,WATER_LEVEL
+8575512,Annapolis,MD,38.98328,-76.4816,63_1612573,/data/4381-2023053106-namforecast/final/insets/8575512_WL.png,WATER_LEVEL
+8594900,Washington,DC,38.873,-77.0217,63_1610464,/data/4381-2023053106-namforecast/final/insets/8594900_WL.png,WATER_LEVEL
+8638901,"CBBT, Chesapeake Channel",VA,37.032902,-76.083298,63_1579108,/data/4381-2023053106-namforecast/final/insets/8638901_WL.png,WATER_LEVEL
+8639348,Money Point,VA,36.778194,-76.301861,63_1574398,/data/4381-2023053106-namforecast/final/insets/8639348_WL.png,WATER_LEVEL
+8651370,Duck,NC,36.1833,-75.746696,63_1560656,/data/4381-2023053106-namforecast/final/insets/8651370_WL.png,WATER_LEVEL
+8652587,Oregon Inlet Marina,NC,35.795694,-75.548194,63_1493828,/data/4381-2023053106-namforecast/final/insets/8652587_WL.png,WATER_LEVEL
+8654467,USCG Station Hatteras,NC,35.208611,-75.704194,63_1471692,/data/4381-2023053106-namforecast/final/insets/8654467_WL.png,WATER_LEVEL
+8656483,"Beaufort, Duke Marine Lab",NC,34.717331,-76.670658,63_1045308,/data/4381-2023053106-namforecast/final/insets/8656483_WL.png,WATER_LEVEL
+8658120,Wilmington,NC,34.2275,-77.953611,63_202580,/data/4381-2023053106-namforecast/final/insets/8658120_WL.png,WATER_LEVEL
+8658163,Wrightsville Beach,NC,34.213333,-77.786667,63_1338496,/data/4381-2023053106-namforecast/final/insets/8658163_WL.png,WATER_LEVEL
+8661070,Springmaid Pier,SC,33.655556,-78.916389,63_820693,/data/4381-2023053106-namforecast/final/insets/8661070_WL.png,WATER_LEVEL
+8662245,Oyster Landing (N Inlet Estuary),-99999,33.3517,-79.1867,63_851443,/data/4381-2023053106-namforecast/final/insets/8662245_WL.png,WATER_LEVEL
+8665530,Charleston,SC,32.780833,-79.923611,63_760275,/data/4381-2023053106-namforecast/final/insets/8665530_WL.png,WATER_LEVEL
+8670870,Fort Pulaski,GA,32.034694,-80.903028,63_726202,/data/4381-2023053106-namforecast/final/insets/8670870_WL.png,WATER_LEVEL
+8720030,Fernandina Beach,FL,30.671356,-81.465842,63_1101761,/data/4381-2023053106-namforecast/final/insets/8720030_WL.png,WATER_LEVEL
+8721604,"Trident Pier, Port Canaveral",FL,28.415833,-80.593056,63_1130201,/data/4381-2023053106-namforecast/final/insets/8721604_WL.png,WATER_LEVEL
+8724580,Key West,FL,24.550439,-81.80915,63_686225,/data/4381-2023053106-namforecast/final/insets/8724580_WL.png,WATER_LEVEL
+8726520,"St. Petersburg, Tampa Bay",FL,27.761111,-82.626944,63_1625077,/data/4381-2023053106-namforecast/final/insets/8726520_WL.png,WATER_LEVEL
+8727520,Cedar Key,FL,29.135,-83.0317,63_353096,/data/4381-2023053106-namforecast/final/insets/8727520_WL.png,WATER_LEVEL
+8728690,Apalachicola,FL,29.724444,-84.980556,63_247486,/data/4381-2023053106-namforecast/final/insets/8728690_WL.png,WATER_LEVEL
+8729840,Pensacola,FL,30.4044,-87.211197,63_338603,/data/4381-2023053106-namforecast/final/insets/8729840_WL.png,WATER_LEVEL
+8735180,Dauphin Island,AL,30.25,-88.075,63_308171,/data/4381-2023053106-namforecast/final/insets/8735180_WL.png,WATER_LEVEL
+8741533,Pascagoula NOAA Lab,MS,30.367778,-88.563056,63_257036,/data/4381-2023053106-namforecast/final/insets/8741533_WL.png,WATER_LEVEL
+8768094,Calcasieu Pass,LA,29.768167,-93.342889,63_280208,/data/4381-2023053106-namforecast/final/insets/8768094_WL.png,WATER_LEVEL
+8770570,Sabine Pass North,TX,29.7284,-93.8701,63_240734,/data/4381-2023053106-namforecast/final/insets/8770570_WL.png,WATER_LEVEL
+WSNN7,Hominy Swamp at Forest Hills Rd nr Wilson,-99999,35.7422,-77.9519,,/data/4381-2023053106-namforecast/final/insets/WSNN7_WL.png,WATER_ELEVATION
+STYN7,Stony Creek at W. Washington St in Nashville,-99999,35.978191,-77.972482,,/data/4381-2023053106-namforecast/final/insets/STYN7_WL.png,WATER_ELEVATION
+30061,South River at NC 24 at Autryville,-99999,34.99923,-78.6460057,,/data/4381-2023053106-namforecast/final/insets/30061_WL.png,WATER_ELEVATION
+RMBN7,Tar River at US 301 Bypass at Rocky Mount,-99999,35.9261,-77.8306,,/data/4381-2023053106-namforecast/final/insets/RMBN7_WL.png,WATER_ELEVATION
+30006,Beaver Cr. @ SR 1404,-99999,35.07383,-78.976746,,/data/4381-2023053106-namforecast/final/insets/30006_WL.png,WATER_ELEVATION
+WNRN7,Cashie R in Windsor at S. King St,-99999,35.9939028,-76.9426028,,/data/4381-2023053106-namforecast/final/insets/WNRN7_WL.png,WATER_ELEVATION
+30033,Black River at Antioch Church Rd,-99999,35.3118,-78.6457,,/data/4381-2023053106-namforecast/final/insets/30033_WL.png,WATER_ELEVATION
+WHSN7,Soules Swamp at S. Madison St in Whiteville,-99999,34.317032,-78.706037,,/data/4381-2023053106-namforecast/final/insets/WHSN7_WL.png,WATER_ELEVATION
+30032,Cross Creek at Hillsboro St. in Fayetteville,-99999,35.058384,-78.8845,,/data/4381-2023053106-namforecast/final/insets/30032_WL.png,WATER_ELEVATION
+30003,Cawcaw Swamp @ No. 5 School Rd NW,-99999,33.95506,-78.57794,,/data/4381-2023053106-namforecast/final/insets/30003_WL.png,WATER_ELEVATION
+30060,New River at NC 24 nr Richlands,-99999,34.91878,-77.6166874,,/data/4381-2023053106-namforecast/final/insets/30060_WL.png,WATER_ELEVATION
+30016,Green Mill Run at E. 14th St. at Greenville,-99999,35.60045,-77.36824,,/data/4381-2023053106-namforecast/final/insets/30016_WL.png,WATER_ELEVATION
+30011,Deep Ck @ Dickens Rd,-99999,35.947622,-77.475557,,/data/4381-2023053106-namforecast/final/insets/30011_WL.png,WATER_ELEVATION
+30050,Chockoyette Cr. at I-95,-99999,36.4197851,-77.6331588,,/data/4381-2023053106-namforecast/final/insets/30050_WL.png,WATER_ELEVATION
+HSWN7,Hominy Swamp at Mercer St in Wilson,-99999,35.71979,-77.92012,,/data/4381-2023053106-namforecast/final/insets/HSWN7_WL.png,WATER_ELEVATION
+30009,Contentnea Cr @ US301,-99999,35.687927,-77.947902,,/data/4381-2023053106-namforecast/final/insets/30009_WL.png,WATER_ELEVATION
+STON7,Stony Cr. at Winstead Ave. Rocky Mount,-99999,35.9688,-77.849964,,/data/4381-2023053106-namforecast/final/insets/STON7_WL.png,WATER_ELEVATION
+30010,Little Contentnea Creek @ NC 121,-99999,35.60677,-77.57472,,/data/4381-2023053106-namforecast/final/insets/30010_WL.png,WATER_ELEVATION
+30062,Occoneechee Creek at NC158,-99999,36.4101362,-77.4978874,,/data/4381-2023053106-namforecast/final/insets/30062_WL.png,WATER_ELEVATION
+COLN7,Scuppernong R. at Columbia Town Hall,-99999,35.917504,-76.254359,61_26,/data/4381-2023053106-namforecast/final/insets/COLN7_WL.png,WATER_LEVEL
+ROFN7,Rodanthe Ferry Terminal GOES,-99999,35.595547,-75.470031,61_25,/data/4381-2023053106-namforecast/final/insets/ROFN7_WL.png,WATER_LEVEL
+30030,Intracoastal Waterway at Surf City Bridge,-99999,34.426904,-77.548828,61_36,/data/4381-2023053106-namforecast/final/insets/30030_WL.png,WATER_LEVEL
+30065,Black River at NC 210,-99999,34.431339,-78.144123,61_6,/data/4381-2023053106-namforecast/final/insets/30065_WL.png,WATER_LEVEL
+JCKN7,New River at Old Bridge St. in Jacksonville,-99999,34.751175,-77.43425,61_9,/data/4381-2023053106-namforecast/final/insets/JCKN7_WL.png,WATER_LEVEL
+30054,Albemarle Sound at Moor Shore Rd. at Kitty Hawk,-99999,36.06071,-75.699941,61_19,/data/4381-2023053106-namforecast/final/insets/30054_WL.png,WATER_LEVEL
+30042,Scuppernong River at Lands Rd.,-99999,35.8778,-76.3374,61_30,/data/4381-2023053106-namforecast/final/insets/30042_WL.png,WATER_LEVEL
+30048,Conaby Creek at US 64,-99999,35.85941,-76.74168,61_18,/data/4381-2023053106-namforecast/final/insets/30048_WL.png,WATER_LEVEL
+OCAN7,Pamlico Sound at Ocracoke - NCCAT Campus,-99999,35.1153731,-75.9873474,61_33,/data/4381-2023053106-namforecast/final/insets/OCAN7_WL.png,WATER_LEVEL
+30053,Shingle Landing Cr at NC 168 nr Moyock,-99999,36.52519,-76.1789294,61_22,/data/4381-2023053106-namforecast/final/insets/30053_WL.png,WATER_LEVEL
+CTIN7,Pamlico Sound at Cedar Island Ferry Terminal,-99999,35.018312,-76.3144792,61_0,/data/4381-2023053106-namforecast/final/insets/CTIN7_WL.png,WATER_LEVEL
+MINN7,Currituck Sound at Mackay&#039;s Island NWF,-99999,36.527123,-75.9902,61_43,/data/4381-2023053106-namforecast/final/insets/MINN7_WL.png,WATER_LEVEL
+HBKN7,Jones Bay at Hobucken,-99999,35.245075,-76.5912083,61_46,/data/4381-2023053106-namforecast/final/insets/HBKN7_WL.png,WATER_LEVEL
+30055,Askins Cr. at Askins Cr. Rd at Avon,-99999,35.325819,-75.511523,61_17,/data/4381-2023053106-namforecast/final/insets/30055_WL.png,WATER_LEVEL
+EMWN7,Pasquotank R. at Elizabeth City Mariners' Wharf Park,-99999,36.298522,-76.218561,61_1,/data/4381-2023053106-namforecast/final/insets/EMWN7_WL.png,WATER_LEVEL
+30002,Shallotte River @ NC-179/SR-130 (Main Street),-99999,33.97249,-78.38651,61_11,/data/4381-2023053106-namforecast/final/insets/30002_WL.png,WATER_LEVEL
+30015,Trent River at E Front St at New Bern,-99999,35.102798,-77.036637,61_48,/data/4381-2023053106-namforecast/final/insets/30015_WL.png,WATER_LEVEL
+30001,Lockwoods Folly River @ SR-211,-99999,34.01093,-78.2634,61_12,/data/4381-2023053106-namforecast/final/insets/30001_WL.png,WATER_LEVEL
+30039,Atlantic Ocean at Southport Waterfront Park,-99999,33.917,-78.0179,61_27,/data/4381-2023053106-namforecast/final/insets/30039_WL.png,WATER_LEVEL
+BLHN7,Pungo R at Belhaven,-99999,35.5372926,-76.6228111,61_32,/data/4381-2023053106-namforecast/final/insets/BLHN7_WL.png,WATER_LEVEL
+ORLN7,Neuse R. at Oriental Town Pier,-99999,35.0244328,-76.6919377,61_4,/data/4381-2023053106-namforecast/final/insets/ORLN7_WL.png,WATER_LEVEL
+WDVN7,Little River at SR 1367 at Woodville,-99999,36.24043,-76.324672,61_8,/data/4381-2023053106-namforecast/final/insets/WDVN7_WL.png,WATER_LEVEL
+JYCN7,Joyce Creek at Old Swamp Rd,-99999,36.446967,-76.293864,61_7,/data/4381-2023053106-namforecast/final/insets/JYCN7_WL.png,WATER_LEVEL
+EWPN7,Chowan R. at Edenton Waterfront Park,-99999,36.05651,-76.611386,61_34,/data/4381-2023053106-namforecast/final/insets/EWPN7_WL.png,WATER_LEVEL
+30064,NCSC_SAB_V1.23_NOWCAST,-99999,35.90721893310547,-75.66786193847656,61_41,/data/4381-2023053106-namforecast/final/insets/30064_WL.png,WATER_LEVEL
+30069,Slocum Creek at Church Rd Near Havelock,-99999,34.891259,-76.923253,61_53,/data/4381-2023053106-namforecast/final/insets/30069_WL.png,WATER_LEVEL
+30059,Queen&#039;s Creek at NC 24 at Hubert,-99999,34.7128737,-77.2224247,61_21,/data/4381-2023053106-namforecast/final/insets/30059_WL.png,WATER_LEVEL
+VNCN7,Neuse River at NW Craven Middle School,-99999,35.219075,-77.149779,61_10,/data/4381-2023053106-namforecast/final/insets/VNCN7_WL.png,WATER_LEVEL
+30008,Intracoastal Waterway at Sunset Blvd. Bridge,-99999,33.87733,-78.509824,61_35,/data/4381-2023053106-namforecast/final/insets/30008_WL.png,WATER_LEVEL
+35370047744601,Coinjock Creek at NC 168,-99999,36.4073584,-75.9949254,61_16,/data/4381-2023053106-namforecast/final/insets/35370047744601_WL.png,WATER_LEVEL
+30052,Buckskin Creek at NC 168,-99999,36.4532541,-76.0692637,61_15,/data/4381-2023053106-namforecast/final/insets/30052_WL.png,WATER_LEVEL
+30029,Bogue Sound at NC 58 Emerald Isle Bridge,-99999,34.6681917,-77.0634806,61_40,/data/4381-2023053106-namforecast/final/insets/30029_WL.png,WATER_LEVEL
+PNGN7,Pungo Rvr @ NC 45 GOES,-99999,35.5852,-76.4856,61_29,/data/4381-2023053106-namforecast/final/insets/PNGN7_WL.png,WATER_LEVEL
+30058,Southwest Creek at US 17,-99999,34.7055971,-77.4802827,61_23,/data/4381-2023053106-namforecast/final/insets/30058_WL.png,WATER_LEVEL
+30012,Cape Ck at Fessenden Center (NC 12),-99999,35.267677,-75.521895,61_39,/data/4381-2023053106-namforecast/final/insets/30012_WL.png,WATER_LEVEL
+ALIN7,North Fork Alligator R. at NC 94 GOES,-99999,35.7215,-76.1934,61_44,/data/4381-2023053106-namforecast/final/insets/ALIN7_WL.png,WATER_LEVEL
+GRMN7,NCSC_SAB_V1.23_NOWCAST,-99999,35.57405471801758,-77.17572784423828,61_3,/data/4381-2023053106-namforecast/final/insets/GRMN7_WL.png,WATER_LEVEL
+41013,Frying Pan Shoals,NC,33.441,-77.764,63_1450954,/data/4381-2023053106-namforecast/final/insets/41013_WL.png,WAVE_HEIGHT
+44088,Virginia Beach Offshore,VA,36.614000000000004,-74.84100000000001,63_1567552,/data/4381-2023053106-namforecast/final/insets/44088_WL.png,WAVE_HEIGHT
+44009,DELAWARE BAY 26 NM Southeast of Cape May,NJ,38.46,-74.692,63_1532930,/data/4381-2023053106-namforecast/final/insets/44009_WL.png,WAVE_HEIGHT
+44008,NANTUCKET 54 NM Southeast of Nantucket,MA,40.496,-69.25,63_1449081,/data/4381-2023053106-namforecast/final/insets/44008_WL.png,WAVE_HEIGHT
+41001,EAST HATTERAS - 150 NM East of Cape Hatteras,NC,34.703,-72.242,63_1534362,/data/4381-2023053106-namforecast/final/insets/41001_WL.png,WAVE_HEIGHT
+44100,Duck FRF 26m,NC,36.258,-75.593,63_1568997,/data/4381-2023053106-namforecast/final/insets/44100_WL.png,WAVE_HEIGHT
+44095,Oregon Inlet,NC,35.75,-75.33,63_1556536,/data/4381-2023053106-namforecast/final/insets/44095_WL.png,WAVE_HEIGHT
+41004,EDISTO - 41 NM Southeast of Charleston,SC,32.501999999999995,-79.09899999999999,63_1433456,/data/4381-2023053106-namforecast/final/insets/41004_WL.png,WAVE_HEIGHT
+41008,GRAYS REEF - 40 NM Southeast of Savannah,GA,31.4,-80.866,63_1303439,/data/4381-2023053106-namforecast/final/insets/41008_WL.png,WAVE_HEIGHT
+41010,NCSC_SAB_V1.23_NOWCAST,-99999,28.8308314162,-78.4986873413,63_1450889,/data/4381-2023053106-namforecast/final/insets/41010_WL.png,WAVE_HEIGHT
+41009,CANAVERAL 20 NM East of Cape Canaveral,FL,28.508000000000003,-80.185,63_1342159,/data/4381-2023053106-namforecast/final/insets/41009_WL.png,WAVE_HEIGHT
+42036,WEST TAMPA - 112 NM WNW of Tampa,FL,28.500999999999998,-84.508,63_463137,/data/4381-2023053106-namforecast/final/insets/42036_WL.png,WAVE_HEIGHT
+42409,NCSC_SAB_V1.23_NOWCAST,-99999,25.8723155307,-89.18667000410001,63_513555,/data/4381-2023053106-namforecast/final/insets/42409_WL.png,WAVE_HEIGHT
+42020,CORPUS CHRISTI TX - 60NM SSE of Corpus Christi,TX,26.955,-96.68700000000001,63_357578,/data/4381-2023053106-namforecast/final/insets/42020_WL.png,WAVE_HEIGHT
+44402,NCSC_SAB_V1.23_NOWCAST,-99999,39.2471301385,-70.6647351917,63_1497706,/data/4381-2023053106-namforecast/final/insets/44402_WL.png,WAVE_HEIGHT
+44150,NCSC_SAB_V1.23_NOWCAST,-99999,42.5299088422,-64.0300533773,63_1409071,/data/4381-2023053106-namforecast/final/insets/44150_WL.png,WAVE_HEIGHT
+44037,Buoy M01 - Jordan Basin,ME,43.497,-67.876,63_1331296,/data/4381-2023053106-namforecast/final/insets/44037_WL.png,WAVE_HEIGHT
+44011,GEORGES BANK 170 NM East of Hyannis,MA,41.093,-66.562,63_1436823,/data/4381-2023053106-namforecast/final/insets/44011_WL.png,WAVE_HEIGHT
+EGHN7,,,,,61_45,,
