@@ -23,7 +23,7 @@
               <sld:ColorMapEntry color="#3E9BFF" quantity="${env('q5', 4.0)}" label="${env('l5', '4.0 m')}"/>
               <sld:ColorMapEntry color="#28BBEC" quantity="${env('q6', 5.0)}" label="${env('l6', '5.0 m')}"/>
               <sld:ColorMapEntry color="#18D7CC" quantity="${env('q7', 6.0)}" label="${env('l7', '6.0 m')}"/>
-              <sld:ColorMapEntry color="#21EBAC" quantity="${env('q8', 7.0)]" label="${env('l8', '7.0 m')}"/>
+              <sld:ColorMapEntry color="#21EBAC" quantity="${env('q8', 7.0)}" label="${env('l8', '7.0 m')}"/>
               <sld:ColorMapEntry color="#46F884" quantity="${env('q9', 8.0)}" label="${env('l9', '8.0 m')}"/>
               <sld:ColorMapEntry color="#78FF5A" quantity="${env('q10', 9.0)}" label="${env('l10', '9.0 m')}"/>
               <sld:ColorMapEntry color="#A3FD3C" quantity="${env('q11', 10.0)}" label="${env('l11', '10.0 m')}"/>
