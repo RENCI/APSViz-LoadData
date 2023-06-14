@@ -53,8 +53,8 @@ example wfs dataset:
 {
           "id": "4007-2022050212-obs",
           "show": true,
-          "name": "NOAA Observations - Location: RENCI Cycle: 12 Storm Name: namforecast ADCIRC Grid: hsofs",
-          "description": "NOAA Observations",
+          "name": "Observations - Location: RENCI Cycle: 12 Storm Name: namforecast ADCIRC Grid: hsofs",
+          "description": "Observations",
           "dataCustodian": "RENCI",
           "typeNames": "ADCIRC_2021:4007-2022050212-namforecast_station_properies_view",
           "type":"wfs",
@@ -174,7 +174,7 @@ class TerriaCatalogDB:
         '],' \
         '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms",' \
         '"featureInfoTemplate": {' \
-            '"template": "<div class=\u2019stations\u2019><p><h3>{{stationname}}, {{state}}</h3></p><chart sources=\u0027{{csvurl}}\u0027 column-units=\u0027Forecast:Meters,Nowcast:Meters,NOAA NOS:Meters,NOAA Tidal:Meters,Difference:Meters\u0027 column-titles=\u0027Forecast:Forecast,NOAA NOS:NOAA NOS,NOAA Tidal:NOAA Tidal\u0027 title=\u0027{{stationname}}\u0027></chart></div>"' \
+            '"template": "<div class=\u2019stations\u2019><p><h3>{{stationname}}, {{state}}</h3></p><chart sources=\u0027{{csvurl}}\u0027 column-units=\u0027APS Forecast:Meters,APS Nowcast:Meters,Observations:Meters,NOAA Tidal Prediction:Meters,Difference:Meters\u0027 column-titles=\u0027APS Forecast:APS Forecast,APS Nowcast:APS Nowcast,Observations:Observations,NOAA Tidal Prediction:NOAA Tidal Prediction,Difference:Difference\u0027 title=\u0027{{stationname}}\u0027></chart></div>"' \
         '},' \
         '"info": [' \
             '{' \
@@ -404,7 +404,7 @@ class TerriaCatalogDB:
     # create an info section for this group item
     # date_str looks like this: 05-02-2022
     # name looks like this: Maximum Water Level - Run Location: RENCI Cycle: 12 Storm Name: namforecast ADCIRC Grid: NCSC_SAB_v1.23 (maxele.63.0.10)
-    # or this: NOAA Observations - Location: RENCI Cycle: 12 Storm Name: namforecast ADCIRC Grid: NCSC_SAB_v1.23
+    # or this: Observations - Location: RENCI Cycle: 12 Storm Name: namforecast ADCIRC Grid: NCSC_SAB_v1.23
     # def update_item_info(self, info, date_str, name):
     #     self.logger.info(f'info: {info}  date_str: {date_str}  name: {name}')
     #     # define search strings
@@ -465,15 +465,26 @@ class TerriaCatalogDB:
         # should only need to update workbench array in the catalog group.
         # select value from "ASGS_Mon_config_item" where uid like '2022070712-%' and key='adcirc.gridname';
 
-    def update_latest_results(self, latest_layer_ids, metclass):
-        self.logger.info(f'latest_layer_ids:{latest_layer_ids} metclass:{metclass}')
+    def update_latest_results(self, latest_layer_ids, metclass, layer_title):
+        self.logger.info(f'latest_layer_ids:{latest_layer_ids} metclass:{metclass} layer_title:{layer_title}')
+
+        todays_date = datetime.utcnow()
+        todays_date_str = todays_date.strftime('%Y-%m-%d')
+        self.logger.debug(f'todays_date:{todays_date_str}')
+
+        # do some calculating with dates to see if this run is older than 7 days
+        date_list = get_datestr_from_title(layer_title).split("-")
+        run_date = datetime.fromisoformat(f"{date_list[2]}-{date_list[0]}-{date_list[1]}")
+        delta = todays_date - run_date
+        # if this run date is older than 7 days - don't update workbench
+        # it won't show up on the UI anyway (DB retrieval limit is currently set to 7 days
+        if delta > timedelta(days=7):
+            return
 
         # if this is not tropical run, just and see if the last tropical run takes prority
         if (metclass != 'tropical'):
             # check to see if there is already a tropical run for today
-            todays_date = datetime.utcnow().strftime('%Y-%m-%d')
-            self.logger.debug(f'todays_date:{todays_date}')
-            member_ids = self.apsviz_db.get_tropical_run(todays_date)
+            member_ids = self.apsviz_db.get_tropical_run(todays_date_str)
             self.logger.debug(f'member_ids:{member_ids}')
             # are there any tropical runs already existing today?
             # if not, go ahead and add this run to the workbench
@@ -714,6 +725,7 @@ class TerriaCatalogDB:
         # make array to save latest results maxele layer and noaa obs layer
         latest_layer_ids = []
         metclass = ""
+        layer_title = ""
 
         # do nhc storm layers if any
         for nhc_layer_dict in layergrp["nhc"]:
@@ -725,6 +737,7 @@ class TerriaCatalogDB:
             if ("maxele" in wms_layer_dict["layername"]):
                 latest_layer_ids.append(item_id)
                 metclass = wms_layer_dict["metclass"]
+                layer_title = wms_layer_dict["title"]
         # now do WFS layers
         for wfs_layer_dict in layergrp["wfs"]:
             item_id = self.add_wfs_item(wfs_layer_dict["metclass"], wfs_layer_dict["title"], wfs_layer_dict["layername"], wfs_layer_dict["info"], wfs_layer_dict["project_code"], wfs_layer_dict["product_type"])
@@ -732,7 +745,5 @@ class TerriaCatalogDB:
             # put this layer on top
             latest_layer_ids.insert(0, item_id)
 
-        self.update_latest_results(latest_layer_ids, metclass)
+        self.update_latest_results(latest_layer_ids, metclass, layer_title)
 
-        # now delete the groups older than 14 days
-        #self.rm_oldest_groups()

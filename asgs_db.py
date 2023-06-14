@@ -109,7 +109,8 @@ class ASGS_DB:
             'forcing.tropicalcyclone.stormname': '',
             'ADCIRCgrid': '',
             'monitoring.rmqmessaging.locationname': '',
-            'instancename': ''
+            'instancename': '',
+            'stormnumber': ''
         }
         self.logger.info(f'Retrieving DB record metadata - instance id: {self.instance} uid: {self.uid}')
 
@@ -150,6 +151,8 @@ class ASGS_DB:
         # also add to instance id column
         # and finally, create an url where the obs chart for each station can be accessed
         #try: catch this exception in calling program instead
+        # header of stationProps.csv looks like this:
+        # StationId,StationName,Source,State,Lat,Lon,Node,Filename,Type
         with open(csv_file_path, 'r') as f:
             reader = csv.reader(f)
             header = next(reader)  # Skip the header row.
@@ -172,8 +175,8 @@ class ASGS_DB:
                     filename_list = os.path.splitext(filename)
                     json_url = f"{host}/obs_pngs/{self.instanceId}/{filename_list[0]}.json"
                     csv_url = f"{host}/obs_pngs/{self.instanceId}/{filename_list[0]}.csv"
-                    sql_stmt = "INSERT INTO stations (stationid, stationname, state, lat, lon, node, filename, the_geom, instance_id, imageurl, type, jsonurl, csvurl) VALUES (%s, %s, %s, %s, %s, %s, %s, ST_SetSRID(ST_MakePoint(%s, %s),4326), %s, %s, %s, %s, %s)"
-                    params = [row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[4], row[3], self.instanceId, png_url, row[7], json_url, csv_url]
+                    sql_stmt = "INSERT INTO stations (stationid, stationname, source, state, lat, lon, node, filename, the_geom, instance_id, imageurl, type, jsonurl, csvurl) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, ST_SetSRID(ST_MakePoint(%s, %s),4326), %s, %s, %s, %s, %s)"
+                    params = [row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[5], row[4], self.instanceId, png_url, row[8], json_url, csv_url]
                     logger.debug(f"sql_stmt: {sql_stmt} params: {params}")
                     self.cursor.execute(sql_stmt, params)
                 except (Exception):
