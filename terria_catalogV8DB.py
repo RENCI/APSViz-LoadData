@@ -473,7 +473,7 @@ class TerriaCatalogDB:
         self.logger.debug(f'todays_date:{todays_date_str}')
 
         # do some calculating with dates to see if this run is older than 7 days
-        date_list = get_datestr_from_title(layer_title).split("-")
+        date_list = self.get_datestr_from_title(layer_title).split("-")
         run_date = datetime.fromisoformat(f"{date_list[2]}-{date_list[0]}-{date_list[1]}")
         delta = todays_date - run_date
         # if this run date is older than 7 days - don't update workbench

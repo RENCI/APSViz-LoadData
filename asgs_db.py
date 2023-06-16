@@ -170,7 +170,7 @@ class ASGS_DB:
                         continue
 
                     logger.debug(f"opened csv file - saving this row to db: {row}")
-                    filename = os.path.basename(row[6])
+                    filename = os.path.basename(row[7])
                     png_url = f"{host}/obs_pngs/{self.instanceId}/{filename}"
                     filename_list = os.path.splitext(filename)
                     json_url = f"{host}/obs_pngs/{self.instanceId}/{filename_list[0]}.json"
