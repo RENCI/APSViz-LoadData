@@ -396,7 +396,7 @@ class TerriaCatalogDB:
         if self.MAXWVEL_STYLE in layername:
             return f'{self.MAXWVEL_STYLE}_env_style'
         elif self.SWAN_STYLE in layername:
-            return f'{self.SWAN_STYLE}_env_style'
+            return f'{self.SWAN_STYLE}_env_style_v2'
         else:
             return f'{self.MAXELE_STYLE}_env_style_v2'
 
@@ -730,6 +730,7 @@ class TerriaCatalogDB:
         # do nhc storm layers if any
         for nhc_layer_dict in layergrp["nhc"]:
             item_id = self.add_nhc_item(nhc_layer_dict["title"], nhc_layer_dict["layername"])
+            latest_layer_ids.append(item_id)
 
         # next take care of the WMS layers
         for wms_layer_dict in layergrp["wms"]:
