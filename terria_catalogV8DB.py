@@ -303,11 +303,11 @@ class TerriaCatalogDB:
     def getStormName(self, name):
             self.logger.debug(f'getStormName name: {name}')
             srch_start_str = 'Storm Name: '
-            srch_end_str = ' Advisory:'
+            srch_end_str = '('
 
             try:
                 idx = name.index(srch_start_str)
-                start_idx = idx + len(srch_start_str)
+                start_idx = idx + len(srch_start_str) + 1
                 end_idx = name.index(srch_end_str)
                 storm_name = name[start_idx:end_idx]
 
@@ -696,6 +696,9 @@ class TerriaCatalogDB:
     def add_nhc_item(self,
                      name,
                      typeNames,
+                     advisory,
+                     project_code,
+                     product_type,
                      url=None,
                      show=True):
 
@@ -712,8 +715,9 @@ class TerriaCatalogDB:
             self.create_cat_group(date_str)
 
         nhc_item = self.create_nhc_data_item(item_id, show, name, typeNames, url)
-        #self.apsviz_db.add_cat_item(grid_type, event_type, run_date, instance_name, wfs_item)
-        self.apsviz_db.add_cat_item("NA", "NA", date_str, "NA", nhc_item)
+        storm_name = self.getStormName(name)
+        cycle = self.getCycle(name)
+        self.apsviz_db.add_cat_item("NA", "NA", date_str, "NA", nhc_item, "tropical", storm_name, cycle, advisory, project_code, product_type)
 
         return item_id
 
@@ -729,8 +733,8 @@ class TerriaCatalogDB:
 
         # do nhc storm layers if any
         for nhc_layer_dict in layergrp["nhc"]:
-            item_id = self.add_nhc_item(nhc_layer_dict["title"], nhc_layer_dict["layername"])
-            latest_layer_ids.append(item_id)
+            item_id = self.add_nhc_item(nhc_layer_dict["title"], nhc_layer_dict["layername"], nhc_layer_dict["advisory"], nhc_layer_dict["project_code"], nhc_layer_dict["product_type"])
+            #latest_layer_ids.append(item_id)
 
         # next take care of the WMS layers
         for wms_layer_dict in layergrp["wms"]:

@@ -420,7 +420,8 @@ def add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, layergr
 
                     logger.debug(f"setting this coverage: {layer_name} to {title}")
                     full_layername = f"{worksp}:{layer_name}"
-                    new_layergrp["nhc"].append({"title": title, "layername": full_layername})
+                    product_type = f"nhc_{param_name}"
+                    new_layergrp["nhc"].append({"title": title, "layername": full_layername, "advisory": advisory, "project_code": meta_dict['suite.project_code'], "product_type": product_type})
         except:
             e = sys.exc_info()[0]
             logger.error(f"Error encountered while trying to create NHC shapefile layers in GeoServer: {e}")
