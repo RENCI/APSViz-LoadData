@@ -307,7 +307,7 @@ class TerriaCatalogDB:
 
             try:
                 idx = name.index(srch_start_str)
-                start_idx = idx + len(srch_start_str) + 1
+                start_idx = idx + len(srch_start_str)
                 end_idx = name.index(srch_end_str)
                 storm_name = name[start_idx:end_idx]
 
