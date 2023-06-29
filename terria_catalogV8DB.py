@@ -241,6 +241,11 @@ class TerriaCatalogDB:
                 '"name": "Storm Name",' \
                 '"content": "Content",' \
                 '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Product Type",' \
+                '"content": "Content",' \
+                '"show": false' \
             '}' \
         ']' \
     '}'
@@ -470,7 +475,7 @@ class TerriaCatalogDB:
     #     return info
 
     # populate the info section for this group item
-    def update_item_info(self, info, layer_info):
+    def update_item_info(self, info, layer_info, product_type):
         self.logger.info(f'info: {info}')
 
         # update info content
@@ -497,6 +502,7 @@ class TerriaCatalogDB:
         info[7]["content"] = layer_info["location"]
         # storm name
         info[9]["content"] = layer_info["stormname"]
+        info[10]["product_type"] = product_type
 
         return info
 
@@ -656,7 +662,7 @@ class TerriaCatalogDB:
         style = self.get_wms_style(layers)
 
         wms_item = self.create_wms_data_item(item_id, show, name, style, layers, url, legend_url)
-        info = self.update_item_info(wms_item["info"], wms_info)
+        info = self.update_item_info(wms_item["info"], wms_info, product_type)
         wms_item["info"] = info
 
         # now add this member item to the catalog group
@@ -708,7 +714,7 @@ class TerriaCatalogDB:
             self.create_cat_group(date_str)
 
         wfs_item = self.create_wfs_data_item(item_id, show, name, typeNames, url, legend_url)
-        info = self.update_item_info(wfs_item["info"], wfs_info)
+        info = self.update_item_info(wfs_item["info"], wfs_info, product_type)
         wfs_item["info"] = info
 
         # now add this member item to the catalog group
