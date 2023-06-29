@@ -35,6 +35,9 @@ def create_cat_info(meta_dict):
     info_dict.update({"event_type": meta_dict['asgs.enstorm']})
     info_dict.update({"grid_type": meta_dict['ADCIRCgrid']})
     info_dict.update({"instance_name": meta_dict['instancename']})
+    info_dict.update({"cycle": meta_dict['currentcycle']})
+    info_dict.update({"stormname": meta_dict['forcing.tropicalcyclone.stormname']})
+    info_dict.update({"location": meta_dict['monitoring.rmqmessaging.locationname']})
 
     # added for PSC
     info_dict.update({"meteorological_model": meta_dict['forcing.tropicalcyclone.vortexmodel']})

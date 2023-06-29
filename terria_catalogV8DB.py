@@ -121,6 +121,21 @@ class TerriaCatalogDB:
         '},' \
         '"info": [' \
             '{' \
+                '"name": "Advisory",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Cycle",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Ensemble Member",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
                 '"name": "Event Date",' \
                 '"content": "Content",' \
                 '"show": false' \
@@ -141,17 +156,17 @@ class TerriaCatalogDB:
                 '"show": false' \
             '},' \
             '{' \
+                '"name": "Location",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
                 '"name": "Meteorological Model",' \
                 '"content": "Content",' \
                 '"show": false' \
             '},' \
             '{' \
-                '"name": "Advisory",' \
-                '"content": "Content",' \
-                '"show": false' \
-            '},' \
-            '{' \
-                '"name": "Ensemble Member",' \
+                '"name": "Storm Name",' \
                 '"content": "Content",' \
                 '"show": false' \
             '}' \
@@ -174,9 +189,24 @@ class TerriaCatalogDB:
         '],' \
         '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms",' \
         '"featureInfoTemplate": {' \
-            '"template": "<div class=\u2019stations\u2019><p><h3>{{stationname}}, {{state}}</h3></p><chart sources=\u0027{{csvurl}}\u0027 column-units=\u0027APS Forecast:Meters,APS Nowcast:Meters,Observations:Meters,NOAA Tidal Prediction:Meters,Difference:Meters\u0027 column-titles=\u0027APS Forecast:APS Forecast,APS Nowcast:APS Nowcast,Observations:Observations,NOAA Tidal Prediction:NOAA Tidal Prediction,Difference:Difference\u0027 title=\u0027{{stationname}}\u0027></chart></div>"' \
+            '"template": "<div class=\u2019stations\u2019><p><h3>{{stationname}}</h3></p><chart sources=\u0027{{csvurl}}\u0027 column-units=\u0027APS Forecast:Meters,APS Nowcast:Meters,Observations:Meters,Difference (APS-Obs):Meters,NOAA Tidal Predictions:Meters\u0027 column-titles=\u0027APS Forecast:APS Forecast,APS Nowcast:APS Nowcast,Observations:Observations,Difference (APS-Obs):Difference (APS-Obs),NOAA Tidal Predictions:NOAA Tidal Predictions\u0027 title=\u0027{{stationname}}\u0027></chart></div>"' \
         '},' \
         '"info": [' \
+            '{' \
+                '"name": "Advisory",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Cycle",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Ensemble Member",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
             '{' \
                 '"name": "Event Date",' \
                 '"content": "Content",' \
@@ -198,17 +228,17 @@ class TerriaCatalogDB:
                 '"show": false' \
             '},' \
             '{' \
+                '"name": "Location",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
                 '"name": "Meteorological Model",' \
                 '"content": "Content",' \
                 '"show": false' \
             '},' \
             '{' \
-                '"name": "Advisory",' \
-                '"content": "Content",' \
-                '"show": false' \
-            '},' \
-            '{' \
-                '"name": "Ensemble Member",' \
+                '"name": "Storm Name",' \
                 '"content": "Content",' \
                 '"show": false' \
             '}' \
@@ -444,21 +474,29 @@ class TerriaCatalogDB:
         self.logger.info(f'info: {info}')
 
         # update info content
-        info[0]["content"] = layer_info["event_date"]
+        info[3]["content"] = layer_info["event_date"]
         # event type
-        info[1]["content"] = layer_info["event_type"]
+        info[4]["content"] = layer_info["event_type"]
         # grid name
-        info[2]["content"] = layer_info["grid_type"]
+        info[5]["content"] = layer_info["grid_type"]
         # instance name
-        info[3]["content"] = layer_info["instance_name"]
+        info[6]["content"] = layer_info["instance_name"]
 
         # following info items added for PSC
         # meteorological model
-        info[4]["content"] = layer_info["meteorological_model"]
+        info[8]["content"] = layer_info["meteorological_model"]
         # advisory
-        info[5]["content"] = layer_info["advisory"]
+        info[0]["content"] = layer_info["advisory"]
         # ensemble member
-        info[6]["content"] = layer_info["ensemble_member"]
+        info[2]["content"] = layer_info["ensemble_member"]
+
+        # following added for new UI
+        # cycle
+        info[1]["content"] = layer_info["cycle"]
+        # run location
+        info[7]["content"] = layer_info["location"]
+        # storm name
+        info[9]["content"] = layer_info["stormname"]
 
         return info
 
@@ -622,11 +660,11 @@ class TerriaCatalogDB:
         wms_item["info"] = info
 
         # now add this member item to the catalog group
-        grid_type = info[2]["content"]
-        event_type = info[1]["content"]
-        run_date = info[0]["content"]
-        instance_name = info[3]["content"]
-        advisory = info[5]["content"]
+        grid_type = info[5]["content"]
+        event_type = info[4]["content"]
+        run_date = info[3]["content"]
+        instance_name = info[6]["content"]
+        advisory = info[0]["content"]
         # make sure this advisory is a real storm advisory number, if not (is a date) use empty string
         if (len(advisory) > 3):
             advisory = ''
@@ -674,11 +712,11 @@ class TerriaCatalogDB:
         wfs_item["info"] = info
 
         # now add this member item to the catalog group
-        grid_type = info[2]["content"]
-        event_type = info[1]["content"]
-        run_date = info[0]["content"]
-        instance_name = info[3]["content"]
-        advisory = info[5]["content"]
+        grid_type = info[5]["content"]
+        event_type = info[4]["content"]
+        run_date = info[3]["content"]
+        instance_name = info[6]["content"]
+        advisory = info[0]["content"]
         # make sure this advisory is a real storm advisory number, if not (is a date) use empty string
         if (len(advisory) > 3):
             advisory = ''
