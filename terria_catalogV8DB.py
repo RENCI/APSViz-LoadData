@@ -171,6 +171,11 @@ class TerriaCatalogDB:
                 '"show": false' \
             '},' \
             '{' \
+                '"name": "Storm Number",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
                 '"name": "Product Type",' \
                 '"content": "Content",' \
                 '"show": false' \
@@ -244,6 +249,11 @@ class TerriaCatalogDB:
             '},' \
             '{' \
                 '"name": "Storm Name",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+                   '{' \
+                '"name": "Storm Number",' \
                 '"content": "Content",' \
                 '"show": false' \
             '},' \
@@ -507,8 +517,10 @@ class TerriaCatalogDB:
         info[7]["content"] = layer_info["location"]
         # storm name
         info[9]["content"] = layer_info["stormname"]
+        # storm number
+        info[10]["content"] = layer_info["stormnumber"]
         # layer type - i.e. maxele, maxwvel, etc.
-        info[10]["content"] = product_type
+        info[11]["content"] = product_type
 
         return info
 

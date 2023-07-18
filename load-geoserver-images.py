@@ -38,6 +38,7 @@ def create_cat_info(meta_dict):
     info_dict.update({"cycle": meta_dict['currentcycle']})
     info_dict.update({"stormname": meta_dict['forcing.tropicalcyclone.stormname']})
     info_dict.update({"location": meta_dict['monitoring.rmqmessaging.locationname']})
+    info_dict.update({"stormnumber": meta_dict['stormnumber']})
 
     # added for PSC
     info_dict.update({"meteorological_model": meta_dict['forcing.tropicalcyclone.vortexmodel']})
@@ -135,6 +136,7 @@ def add_s3_coveragestore(logger, geo, s3_url, instance_id, worksp, layergrp):
             full_layername = f"{worksp}:{store_name}"
             # now get create and info section for later use in the TerriaMap data catalog
             info_dict = create_cat_info(meta_dict)
+            # TODO are these variables actually available for s3 layers? Does stormnumber need to be added here?
             layergrp["wms"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict, "project_code": meta_dict['suite.project_code'], "product_type": "hec_ras_water_surface"})
 
     return layergrp
