@@ -39,6 +39,9 @@ def create_cat_info(meta_dict):
     info_dict.update({"stormname": meta_dict['forcing.tropicalcyclone.stormname']})
     info_dict.update({"location": meta_dict['monitoring.rmqmessaging.locationname']})
     info_dict.update({"stormnumber": meta_dict['stormnumber']})
+    # reformat tds download url
+    url = f"{meta_dict['downloadurl'].replace('fileServer', 'catalog', 1)}/catalog.html"
+    info_dict.update({"downloadurl": url})
 
     # added for PSC
     info_dict.update({"meteorological_model": meta_dict['forcing.tropicalcyclone.vortexmodel']})
@@ -88,9 +91,9 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name, kalpana=Fal
 
     title = "N/A"
     if (meta_dict['forcing.metclass'] == 'synoptic'):
-        title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({title_layer_name})"
+        title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({title_layer_name})"
     else: # tropical
-        title = f"Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']}({meta_dict['stormnumber']}) Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({title_layer_name})"
+        title = f"Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']}({meta_dict['stormnumber']}) Advisory:{meta_dict['advisory']} Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({title_layer_name})"
         # title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
     logger.debug(f"setting this coverage: {layer_name} to {title}")
 
@@ -339,10 +342,10 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
                 if len(date_list) == 3:
                     run_date = f"{date_list[1]}-{date_list[2]}-20{date_list[0]}"
             if (meta_dict['forcing.metclass'] == 'synoptic'):
-                title = f"Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
+                title = f"Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
             else: # tropical
                 # title = f"Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
-                title = f"Observations - Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']}({meta_dict['stormnumber']}) Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
+                title = f"Observations - Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']}({meta_dict['stormnumber']}) Advisory:{meta_dict['advisory']} Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
             geo.publish_featurestore_sqlview(name, title, store_name, sql, key_column='gid', geom_name='the_geom', geom_type='Geometry', workspace=worksp)
 
             # now set the default style

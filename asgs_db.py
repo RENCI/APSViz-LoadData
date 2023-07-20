@@ -110,7 +110,8 @@ class ASGS_DB:
             'ADCIRCgrid': '',
             'monitoring.rmqmessaging.locationname': '',
             'instancename': '',
-            'stormnumber': ''
+            'stormnumber': '',
+            'downloadurl': ''
         }
         self.logger.info(f'Retrieving DB record metadata - instance id: {self.instance} uid: {self.uid}')
 

@@ -179,6 +179,11 @@ class TerriaCatalogDB:
                 '"name": "Product Type",' \
                 '"content": "Content",' \
                 '"show": false' \
+            '},' \
+            '{' \
+                '"name": "TDS Download URL",' \
+                '"content": "Content",' \
+                '"show": false' \
             '}' \
         ']' \
     '}'
@@ -259,6 +264,11 @@ class TerriaCatalogDB:
             '},' \
             '{' \
                 '"name": "Product Type",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
+                '"name": "TDS Download URL",' \
                 '"content": "Content",' \
                 '"show": false' \
             '}' \
@@ -521,6 +531,7 @@ class TerriaCatalogDB:
         info[10]["content"] = layer_info["stormnumber"]
         # layer type - i.e. maxele, maxwvel, etc.
         info[11]["content"] = product_type
+        info[12]["content"] = layer_info["downloadurl"]
 
         return info
 
