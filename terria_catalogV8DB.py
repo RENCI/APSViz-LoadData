@@ -823,5 +823,6 @@ class TerriaCatalogDB:
             # put this layer on top
             latest_layer_ids.insert(0, item_id)
 
-        self.update_latest_results(latest_layer_ids, metclass, layer_title)
+        if (len(latest_layer_ids)):
+            self.update_latest_results(latest_layer_ids, metclass, layer_title)
 

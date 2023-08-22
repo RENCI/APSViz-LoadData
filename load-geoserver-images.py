@@ -110,6 +110,8 @@ def add_s3_coveragestore(logger, geo, s3_url, instance_id, worksp, layergrp):
     store_name = str(instance_id) + "_HEC-RAS"
     logger.info(f'Adding store: {store_name} into workspace: {worksp}')
 
+    # add tiff file name to s3_url - fixed for now to hecras_raster_wse.tif
+    s3_url = f"{s3_url}/hecras_raster_wse.tif"
     # create the s3 geotiff coveragestore
     ret = geo.create_s3cog_coveragestore(s3_url, store_name, workspace=worksp)
 
@@ -140,7 +142,7 @@ def add_s3_coveragestore(logger, geo, s3_url, instance_id, worksp, layergrp):
             # now get create and info section for later use in the TerriaMap data catalog
             info_dict = create_cat_info(meta_dict)
             # TODO are these variables actually available for s3 layers? Does stormnumber need to be added here?
-            layergrp["wms"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict, "project_code": meta_dict['suite.project_code'], "product_type": "hec_ras_water_surface"})
+            layergrp["wms"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict, "project_code": meta_dict['suite.project_code'], "product_type": "hec_ras_water_surface", "kalpana": False})
 
     return layergrp
 
