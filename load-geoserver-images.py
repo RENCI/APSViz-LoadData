@@ -1,6 +1,7 @@
 import os, sys
 import fnmatch
 import logging
+import boto3
 
 from geo.Geoserver import Geoserver
 from common.logging import LoggingUtil
@@ -100,7 +101,31 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name, kalpana=Fal
     geo.set_coverage_title(worksp, layer_name, layer_name, title)
 
     return title, meta_dict
+def check_s3file(logger, s3_url):
+    import boto3
+    from botocore import UNSIGNED
+    from botocore.client import Config
 
+    # Create S3 Client
+    s3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))
+
+    # Bucket and Key that we want to check
+    #demo_bucket_name = 'floodid-louisiana-model-data'
+    path_parts = s3_url.replace("https://", "").split("/")
+    demo_bucket_name = path_parts.pop(0).split('.')[0]
+    #demo_key_name = 'adcirc_gfs_hec_example/rougarou/gfs/2023/08/21/00/hecras/amite/forecast/base/hecras_raster_wse.tif'
+    demo_key_name = "/".join(path_parts)
+
+    # Use head_object to check if the key exists in the bucket
+    try:
+        resp = s3.head_object(Bucket=demo_bucket_name, Key=demo_key_name)
+        logger.info(f"s3 file exists, metatdata:{resp}")
+    except s3.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == '404':
+            logger.info(f"cannot access s3 file: {demo_key_name}")
+        else:
+            # Handle Any other type of error
+            raise
 
 def add_s3_coveragestore(logger, geo, s3_url, instance_id, worksp, layergrp):
 
@@ -112,14 +137,19 @@ def add_s3_coveragestore(logger, geo, s3_url, instance_id, worksp, layergrp):
 
     # add tiff file name to s3_url - fixed for now to hecras_raster_wse.tif
     s3_url = f"{s3_url}/hecras_raster_wse.tif"
+
+    # check to see if the s3 file exists yet - just for debugging
+    check_s3file(logger, s3_url)
+
     # create the s3 geotiff coveragestore
     ret = geo.create_s3cog_coveragestore(s3_url, store_name, workspace=worksp)
-
+    logger.info(f"Attempted to add s3 geotiff coverage store, s3_url: {s3_url}  return value: {ret}")
     logger.debug(f"Attempted to add s3 geotiff coverage store, s3_url: {s3_url}  return value: {ret}")
     if ('successful' in ret):  # coverage store successfully created
         # now create (publish) layer based on this coveragestore
         ret = geo.publish_s3cog_coverage(s3_url, store_name, workspace=worksp)
 
+        logger.info(f"Attempted to add s3 geotiff layer, s3_url: {s3_url}  return value: {ret}")
         logger.debug(f"Attempted to add s3 geotiff layer, s3_url: {s3_url}  return value: {ret}")
         if ('successful' in ret):  # layer successfully created (published)
             # now we just need to tweak the layer title to make it more readable in Terria Map
