@@ -126,7 +126,7 @@ def add_s3_coveragestore(logger, geo, s3_url, instance_id, worksp, layergrp):
             title, meta_dict = update_layer_title(logger, geo, instance_id, worksp, store_name)
 
             # set the default style for this layer - maxele style for now
-            style_name = "maxele_style"
+            style_name = "maxele_env_style_v2"
             geo.set_default_style(worksp, store_name, style_name)
 
             # TODO: DO WE NEED THIS?
