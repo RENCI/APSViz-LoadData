@@ -439,15 +439,16 @@ class Geoserver:
                 </metadata></coverageStore>' \
                 .format(store_name, file_type, workspace, s3_url)
             url = '{0}/rest/workspaces/{1}/coveragestores'.format(self.service_url, workspace)
+
             headers = {"content-type": "application/xml"}
             r = requests.post(url, data, auth=(
                 self.username, self.password), headers=headers)
 
             if r.status_code in [200, 201]:
-                return "cogs3 coveragestore created/updated successfully"
+                return f"cogs3 coveragestore created/updated successfully data={data}  url={url}"
 
             else:
-                raise Exception('cogs3 coveragestore can not be created')
+                raise Exception(f'cogs3 coveragestore can not be created status code={r.status_code}  data={data}  url={url}')
 
         except Exception as e:
             return 'Error: {}'.format(e)

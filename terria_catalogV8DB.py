@@ -305,7 +305,6 @@ class TerriaCatalogDB:
         self.host = host
         # self.userid = userid
         self.userpw = userpw
-        self.fileserver_host = os.environ.get('FILESERVER_HOST', 'host.here.org').strip()
         self.geoserver_url = os.environ.get('GEOSERVER_URL_EXT', 'url').strip()
         self.geo_workspace = os.environ.get('GEOSERVER_WORKSPACE', 'url').strip()
 
