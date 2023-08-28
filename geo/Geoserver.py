@@ -445,10 +445,10 @@ class Geoserver:
                 self.username, self.password), headers=headers)
 
             if r.status_code in [200, 201]:
-                return f"cogs3 coveragestore created/updated successfully data={data}  url={url}"
+                return "cogs3 coveragestore created/updated successfully"
 
             else:
-                raise Exception(f'cogs3 coveragestore can not be created status code={r.status_code}  data={data}  url={url}')
+                raise Exception(f"cogs3 coveragestore can not be created status code={r.status_code}")
 
         except Exception as e:
             return 'Error: {}'.format(e)
