@@ -132,7 +132,7 @@ def add_s3_coveragestore(logger, geo, s3_url, instance_id, worksp, layergrp):
     logger.info(f"instance_id: {instance_id} workspace: {worksp} s3_url: {s3_url}")
 
     # build layer_name or store_name (same)
-    store_name = str(instance_id) + "_HEC-RAS"
+    store_name = str(instance_id)
     logger.info(f'Adding store: {store_name} into workspace: {worksp}')
 
     # add tiff file name to s3_url - fixed for now to hecras_raster_wse.tif
