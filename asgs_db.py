@@ -111,7 +111,8 @@ class ASGS_DB:
             'monitoring.rmqmessaging.locationname': '',
             'instancename': '',
             'stormnumber': '',
-            'downloadurl': ''
+            'downloadurl': '',
+            'suite.model': ''
         }
         self.logger.info(f'Retrieving DB record metadata - instance id: {self.instance} uid: {self.uid}')
 

@@ -46,6 +46,7 @@ def create_cat_info(meta_dict):
 
     # added for PSC
     info_dict.update({"meteorological_model": meta_dict['forcing.tropicalcyclone.vortexmodel']})
+    info_dict.update({"model": meta_dict['suite.model']})
 
     # if (meta_dict['forcing.metclass'] == 'tropical'):  just get these all of the time
     # added for PSC

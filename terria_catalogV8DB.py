@@ -184,6 +184,11 @@ class TerriaCatalogDB:
                 '"name": "TDS Download URL",' \
                 '"content": "Content",' \
                 '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Model",' \
+                '"content": "Content",' \
+                '"show": false' \
             '}' \
         ']' \
     '}'
@@ -269,6 +274,11 @@ class TerriaCatalogDB:
             '},' \
             '{' \
                 '"name": "TDS Download URL",' \
+                '"content": "Content",' \
+                '"show": false' \
+            '},' \
+            '{' \
+                '"name": "Model",' \
                 '"content": "Content",' \
                 '"show": false' \
             '}' \
@@ -531,6 +541,7 @@ class TerriaCatalogDB:
         # layer type - i.e. maxele, maxwvel, etc.
         info[11]["content"] = product_type
         info[12]["content"] = layer_info["downloadurl"]
+        info[13]["content"] = layer_info["model"]
 
         return info
 
