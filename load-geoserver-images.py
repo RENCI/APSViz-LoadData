@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 #from terria_catalogV8 import TerriaCatalog
 from terria_catalogV8DB import TerriaCatalogDB
 from asgs_db import ASGS_DB
+from apsviz_gauges_db import APSVIZ_GAUGES_DB
 from zipfile import ZipFile
 from general_utils import GeneralUtils
 
@@ -336,8 +337,6 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
     stations_filename = "stationProps.csv"
     csv_file_path = f"{final_path}/insets/{stations_filename}"
     store_name = str(instance_id) + "_station_props"
-    dbname = "adcirc_obs"
-    table_name = "stations"
     style_name = "observations_style_v3"
 
     logger.debug(f"csv_file_path: {csv_file_path} store name: {store_name}")
@@ -346,13 +345,13 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
     # check to see if stationProps.csv file exists, if so, create jndi feature layer
     if os.path.isfile(csv_file_path):
         # get asgs db connection
-        asgs_obsdb = ASGS_DB(logger, dbname, instance_id)
+        asgs_obsdb = APSVIZ_GAUGES_DB(logger, instance_id)
         # save stationProps file to db
         try: # make sure this completes before moving on - observations may not exist for this grid
             asgs_obsdb.insert_station_props(logger, geo, worksp, csv_file_path, geoserver_host)
         except (IOError, OSError):
             e = sys.exc_info()[0]
-            logger.warning(f"WARNING - Cannot save station data in {dbname} DB. Error: {e}")
+            logger.warning(f"WARNING - Cannot save station data in APSVIZ_GAUGES DB. Error: {e}")
             # TODO: Should it be returning here? return layergrp
 
         # ... using pre-defined postgresql JNDI feature store in Geoserver
