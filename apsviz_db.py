@@ -1,64 +1,24 @@
 import os, sys
-import logging
+import base_db
 import psycopg2
 import json
 
 from common.logging import LoggingUtil
 from urllib.parse import urlparse
 
-class APSVIZ_DB:
+class APSVIZ_DB(base_db):
 
     # dbname looks like this: 'asgs_dashboard'
     # instance_id looks like this: '2744-2021050618-namforecast'
     def __init__(self, logger):
-        self.conn = None
-        self.logger = logger
 
-        self.user = os.getenv('APSVIZ_DB_USERNAME', 'user').strip()
-        self.pswd = os.getenv('APSVIZ_DB_PASSWORD', 'password').strip()
-        self.db_name = os.getenv('APSVIZ_DB_DATABASE', 'database').strip()
-        self.host = os.getenv('ASGS_DB_HOST', 'host').strip()
-        self.port = os.getenv('ASGS_DB_PORT', '5432').strip()
+        user = os.getenv('APSVIZ_DB_USERNAME', 'user').strip()
+        pswd = os.getenv('APSVIZ_DB_PASSWORD', 'password').strip()
+        db_name = os.getenv('APSVIZ_DB_DATABASE', 'database').strip()
+        host = os.getenv('APSVIZ_DB_HOST', 'host').strip()
+        port = os.getenv('APSVIZ_DB_PORT', '5432').strip()
 
-        try:
-            # connect to asgs database
-            conn_str = f'host={self.host} port={self.port} dbname={self.db_name} user={self.user} password={self.pswd}'
-
-            self.conn = psycopg2.connect(conn_str)
-            self.conn.set_session(autocommit=True)
-            self.cursor = self.conn.cursor()
-        except:
-            e = sys.exc_info()[0]
-            self.logger.error(f"FAILURE - Cannot connect to APSVIZ DB. error {e}")
-
-    def __del__(self):
-        """
-            close up the DB
-            :return:
-        """
-        try:
-            if self.cursor is not None:
-                self.cursor.close()
-            if self.conn is not None:
-                self.conn.close()
-        except Exception as e:
-            self.logger.error(f'Error detected closing cursor or connection. {e}')
-            #sys.exc_info()[0]
-
-    def get_user(self):
-        return self.user
-
-    def get_password(self):
-        return self.pswd
-
-    def get_host(self):
-        return self.host
-
-    def get_port(self):
-        return self.port
-
-    def get_dbname(self):
-        return self.db_name
+        super().__init__(logger, user, pswd, db_name, host, port)
 
     def find_cat_group(self, date_str):
         exists = False

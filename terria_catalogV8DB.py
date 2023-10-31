@@ -209,7 +209,7 @@ class TerriaCatalogDB:
         '],' \
         '"url": "https://apsviz-geoserver.renci.org/geoserver/ADCIRC_2021/wms",' \
         '"featureInfoTemplate": {' \
-            '"template": "<div class=\u2019stations\u2019><p><h3>{{stationname}}</h3></p><chart sources=\u0027{{csvurl}}\u0027 column-units=\u0027APS Forecast:Meters,APS Nowcast:Meters,Observations:Meters,Difference (APS-Obs):Meters,NOAA Tidal Predictions:Meters\u0027 column-titles=\u0027APS Forecast:APS Forecast,APS Nowcast:APS Nowcast,Observations:Observations,Difference (APS-Obs):Difference (APS-Obs),NOAA Tidal Predictions:NOAA Tidal Predictions\u0027 title=\u0027{{stationname}}\u0027></chart></div>"' \
+            '"template": "<div class=\u2019stations\u2019><p><h3>{{location_name}}</h3></p><chart sources=\u0027{{csvurl}}\u0027 column-units=\u0027APS Forecast:Meters,APS Nowcast:Meters,Observations:Meters,Difference (APS-OBS):Meters,NOAA Tidal Predictions:Meters\u0027 column-titles=\u0027APS Forecast:APS Forecast,APS Nowcast:APS Nowcast,Observations:Observations,Difference (APS-OBS):Difference (APS-OBS),NOAA Tidal Predictions:NOAA Tidal Predictions\u0027 title=\u0027{{location_name}}\u0027></chart></div>"' \
         '},' \
         '"info": [' \
             '{' \
