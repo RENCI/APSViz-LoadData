@@ -84,7 +84,7 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name, kalpana=Fal
     run_date = ''
     # first get metadata from this model run
     db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-    asgsdb = ASGS_DB(logger, db_name, instance_id)
+    asgsdb = ASGS_DB(logger, instance_id)
     meta_dict = asgsdb.getRunMetadata()
     run_date = format_raw_date(meta_dict['currentdate'])
     if (kalpana):
@@ -217,7 +217,7 @@ def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemo
             layer_url = f'{url}/{worksp}/wcs?service=WCS&version=1.1.1&request=DescribeCoverage&identifiers={worksp}:{layer_name}'
             logger.debug(f"Adding coverage store to DB, instanceId: {instance_id} coveragestore url: {layer_url}")
             db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-            asgsdb = ASGS_DB(logger, db_name, instance_id)
+            asgsdb = ASGS_DB(logger, instance_id)
             asgsdb.saveImageURL(file, layer_url)
 
             # add this layer to the wms layer group dict
@@ -270,7 +270,7 @@ def add_kalpana_coveragestore(logger, geo, url, instance_id, worksp, kalpana_pat
                 layer_url = f'{url}/{worksp}/wcs?service=WCS&version=1.1.1&request=DescribeCoverage&identifiers={worksp}:{layer_name}'
                 logger.debug(f"Adding coverage store to DB, instanceId: {instance_id} coveragestore url: {layer_url}")
                 db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-                asgsdb = ASGS_DB(logger, db_name, instance_id)
+                asgsdb = ASGS_DB(logger, instance_id)
                 asgsdb.saveImageURL(file, layer_url)
 
                 # add this layer to the wms layer group dict
@@ -319,7 +319,7 @@ def add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_pa
             layer_url = f'{url}/{worksp}/wcs?service=WCS&version=1.1.1&request=DescribeCoverage&identifiers={worksp}:{layer_name}'
             logger.debug(f"Adding coverage store to DB, instanceId: {instance_id} coveragestore url: {layer_url}")
             db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-            asgsdb = ASGS_DB(logger, db_name, instance_id)
+            asgsdb = ASGS_DB(logger, instance_id)
             asgsdb.saveImageURL(file, layer_url)
 
             # add this layer to the wms layer group dict
@@ -361,7 +361,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
     return
 
 
-def add_dbprops_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host, layergrp):
+def add_dbprops_datastore(logger, geo, instance_id, worksp, layergrp):
     logger.info(f"Adding the station properties datastore for instance id: {instance_id}")
     # set up datastore name
     store_name = str(instance_id) + "_station_props"
@@ -425,7 +425,7 @@ def add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, layergr
 
     # retrieve run.properties metadata fro this instance_id
     db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-    asgsdb = ASGS_DB(logger, db_name, instance_id)
+    asgsdb = ASGS_DB(logger, instance_id)
     meta_dict = asgsdb.getRunMetadata()
 
     # now check to see if this is a tropical storm and only continue if it is

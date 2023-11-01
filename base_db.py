@@ -7,11 +7,11 @@ class BASE_DB:
         self.conn = None
         self.logger = logger
 
-        self.user = user.strip()
-        self.pswd = pswd.strip()
-        self.dbname = db.strip()
-        self.host = host.strip()
-        self.port = port.strip()
+        self.user = user
+        self.pswd = pswd
+        self.dbname = db
+        self.host = host
+        self.port = port
 
         try:
             # connect to the database

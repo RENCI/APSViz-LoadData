@@ -1,12 +1,9 @@
 import os, sys
-import base_db
+from base_db import BASE_DB
 import psycopg2
 import json
 
-from common.logging import LoggingUtil
-from urllib.parse import urlparse
-
-class APSVIZ_DB(base_db):
+class APSVIZ_DB(BASE_DB):
 
     # dbname looks like this: 'asgs_dashboard'
     # instance_id looks like this: '2744-2021050618-namforecast'

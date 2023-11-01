@@ -1,7 +1,7 @@
 import os, sys
-import base_db
+from base_db import BASE_DB
 
-class ASGS_DB(base_db):
+class ASGS_DB(BASE_DB):
 
     # dbname looks like this: 'asgs_dashboard'
     # instance_id looks like this: '2744-2021050618-namforecast'
@@ -88,4 +88,5 @@ class ASGS_DB(base_db):
             if(len(metadata_dict['suite.project_code']) < 1):
                 metadata_dict['suite.project_code'] = 'asgs'
             return metadata_dict
+
 

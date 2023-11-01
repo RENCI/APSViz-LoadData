@@ -1,8 +1,8 @@
 import os, sys
-import base_db
+from base_db import BASE_DB
 import csv
 
-class APSVIZ_GAUGES_DB(base_db):
+class APSVIZ_GAUGES_DB(BASE_DB):
 
     # dbname looks like this: 'apsviz_gauges'
     # instance_id looks like this: '2744-2021050618-namforecast'
@@ -12,7 +12,7 @@ class APSVIZ_GAUGES_DB(base_db):
         pswd = os.getenv('APSVIZ_GAUGES_DB_PASSWORD', 'password').strip()
         host = os.getenv('APSVIZ_GAUGES_DB_HOST', 'host').strip()
         port = os.getenv('APSVIZ_GAUGES_DB_PORT', '5432').strip()
-        db_name = os.getenv('APSVIZ_GAUGES_DB_DATABASE', '5432').strip()
+        db_name = os.getenv('APSVIZ_GAUGES_DB_DATABASE', 'db').strip()
 
         super().__init__(logger, user, pswd, db_name, host, port)
 
