@@ -1,23 +1,20 @@
 import os, sys
-import psycopg2
+from base_db import BASE_DB
 import csv
 
-from common.logging import LoggingUtil
-from urllib.parse import urlparse
+class APSVIZ_GAUGES_DB(BASE_DB):
 
-class APSVIZ_GAUGES_DB:
-
-    # dbname looks like this: 'asgs_dashboard'
+    # dbname looks like this: 'apsviz_gauges'
     # instance_id looks like this: '2744-2021050618-namforecast'
     def __init__(self, logger, instance_id):
-        self.conn = None
-        self.logger = logger
 
-        self.user = os.getenv('APSVIZ_GAUGES_DB_USERNAME', 'user').strip()
-        self.pswd = os.getenv('APSVIZ_GAUGES_DB_PASSWORD', 'password').strip()
-        self.host = os.getenv('APSVIZ_GAUGES_DB_HOST', 'host').strip()
-        self.port = os.getenv('APSVIZ_GAUGES_DB_PORT', '5432').strip()
-        self.db_name = os.getenv('APSVIZ_GAUGES_DB_DATABASE', '5432').strip()
+        user = os.getenv('APSVIZ_GAUGES_DB_USERNAME', 'user').strip()
+        pswd = os.getenv('APSVIZ_GAUGES_DB_PASSWORD', 'password').strip()
+        host = os.getenv('APSVIZ_GAUGES_DB_HOST', 'host').strip()
+        port = os.getenv('APSVIZ_GAUGES_DB_PORT', '5432').strip()
+        db_name = os.getenv('APSVIZ_GAUGES_DB_DATABASE', 'db').strip()
+
+        super().__init__(logger, user, pswd, db_name, host, port)
 
         # save whole Id
         self.instanceId = instance_id
@@ -30,45 +27,6 @@ class APSVIZ_GAUGES_DB:
             self.instance = parts[0]
             self.uid = parts[1]
 
-        try:
-            # connect to asgs database
-            conn_str = f'host={self.host} port={self.port} dbname={self.db_name} user={self.user} password={self.pswd}'
-
-            self.conn = psycopg2.connect(conn_str)
-            self.conn.set_session(autocommit=True)
-            self.cursor = self.conn.cursor()
-        except:
-            e = sys.exc_info()[0]
-            self.logger.error(f"FAILURE - Cannot connect to APSVIZ-GAUGES DB. error {e}")
-
-    def __del__(self):
-        """
-            close up the DB
-            :return:
-        """
-        try:
-            if self.cursor is not None:
-                self.cursor.close()
-            if self.conn is not None:
-                self.conn.close()
-        except Exception as e:
-            self.logger.error(f'Error detected closing cursor or connection. {e}')
-            #sys.exc_info()[0]
-
-    def get_user(self):
-        return self.user
-
-    def get_password(self):
-        return self.pswd
-
-    def get_host(self):
-        return self.host
-
-    def get_port(self):
-        return self.port
-
-    def get_dbname(self):
-        return self.db_name
 
     # find the stationProps.csv file and insert the contents
     # into the adcirc_obs db of the ASGS postgres instance
@@ -122,6 +80,26 @@ class APSVIZ_GAUGES_DB:
                     raise IOError
 
         self.conn.commit()
+
+    def isObsRun(self):
+
+        found = False
+
+        try:
+            sql_stmt = 'SELECT model_run_id FROM drf_apsviz_station WHERE model_run_id=%s'
+            params = [self.instanceId]
+            self.logger.debug(f"sql statement is: {sql_stmt} params are: {params}")
+            self.cursor.execute(sql_stmt, params)
+            ret = self.cursor.fetchone()
+            if ret:
+                self.logger.debug(f"value returned is: {ret}")
+                found = True
+
+        except:
+            e = sys.exc_info()[0]
+            self.logger.error(f"FAILURE - Cannot retrieve instance id from {self.dbname}. error {e}")
+        finally:
+            return found
 
     @staticmethod
     def valid_csv_row(header: list, row: list, optional=None) -> str:

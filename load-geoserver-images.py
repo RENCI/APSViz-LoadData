@@ -84,7 +84,7 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name, kalpana=Fal
     run_date = ''
     # first get metadata from this model run
     db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-    asgsdb = ASGS_DB(logger, db_name, instance_id)
+    asgsdb = ASGS_DB(logger, instance_id)
     meta_dict = asgsdb.getRunMetadata()
     run_date = format_raw_date(meta_dict['currentdate'])
     if (kalpana):
@@ -217,7 +217,7 @@ def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemo
             layer_url = f'{url}/{worksp}/wcs?service=WCS&version=1.1.1&request=DescribeCoverage&identifiers={worksp}:{layer_name}'
             logger.debug(f"Adding coverage store to DB, instanceId: {instance_id} coveragestore url: {layer_url}")
             db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-            asgsdb = ASGS_DB(logger, db_name, instance_id)
+            asgsdb = ASGS_DB(logger, instance_id)
             asgsdb.saveImageURL(file, layer_url)
 
             # add this layer to the wms layer group dict
@@ -270,7 +270,7 @@ def add_kalpana_coveragestore(logger, geo, url, instance_id, worksp, kalpana_pat
                 layer_url = f'{url}/{worksp}/wcs?service=WCS&version=1.1.1&request=DescribeCoverage&identifiers={worksp}:{layer_name}'
                 logger.debug(f"Adding coverage store to DB, instanceId: {instance_id} coveragestore url: {layer_url}")
                 db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-                asgsdb = ASGS_DB(logger, db_name, instance_id)
+                asgsdb = ASGS_DB(logger, instance_id)
                 asgsdb.saveImageURL(file, layer_url)
 
                 # add this layer to the wms layer group dict
@@ -319,7 +319,7 @@ def add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_pa
             layer_url = f'{url}/{worksp}/wcs?service=WCS&version=1.1.1&request=DescribeCoverage&identifiers={worksp}:{layer_name}'
             logger.debug(f"Adding coverage store to DB, instanceId: {instance_id} coveragestore url: {layer_url}")
             db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-            asgsdb = ASGS_DB(logger, db_name, instance_id)
+            asgsdb = ASGS_DB(logger, instance_id)
             asgsdb.saveImageURL(file, layer_url)
 
             # add this layer to the wms layer group dict
@@ -329,15 +329,14 @@ def add_mbtiles_coveragestores(logger, geo, url, instance_id, worksp, mbtiles_pa
     return layergrp
 
 
-# add a datastore in geoserver for the stationProps.csv file
-def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host, layergrp):
+# add a db entries for the stationProps.csv file
+def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host):
     logger.info(f"Adding the station properties datastore for instance id: {instance_id}")
     # set up paths and datastore name
     # TODO put these in ENVs
     stations_filename = "stationProps.csv"
     csv_file_path = f"{final_path}/insets/{stations_filename}"
     store_name = str(instance_id) + "_station_props"
-    style_name = "observations_style_v3"
 
     logger.debug(f"csv_file_path: {csv_file_path} store name: {store_name}")
     logger.debug(f"checking to see if {csv_file_path} exists")
@@ -352,7 +351,27 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
         except (IOError, OSError):
             e = sys.exc_info()[0]
             logger.warning(f"WARNING - Cannot save station data in APSVIZ_GAUGES DB. Error: {e}")
-            # TODO: Should it be returning here? return layergrp
+
+    else:
+        logger.info(f"Observations config file:{csv_file_path} does not exist. Skipping creation of obs/mod layer")
+        utils = GeneralUtils(logger)
+        msg = f"Error encountered with instance id: {instance_id}. Did not create Observations layer because the station properties config file: {csv_file_path} was not found"
+        utils.send_slack_msg(msg, 'slack_issues_channel')
+
+    return
+
+
+def add_dbprops_datastore(logger, geo, instance_id, worksp, layergrp):
+    logger.info(f"Adding the station properties datastore for instance id: {instance_id}")
+    # set up datastore name
+    store_name = str(instance_id) + "_station_props"
+    style_name = "observations_style_v4"
+
+    # get apsviz_gauges db connection
+    asgs_obsdb = APSVIZ_GAUGES_DB(logger, instance_id)
+
+    # check to see if observation for this model run exists, if so, create jndi feature layer
+    if asgs_obsdb.isObsRun():
 
         # ... using pre-defined postgresql JNDI feature store in Geoserver
         ret = geo.create_jndi_featurestore(store_name, worksp, overwrite=False)
@@ -360,13 +379,13 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
 
             logger.info(f"Added JNDI featurestore: {store_name}")
             # now publish this layer with an SQL filter based on instance_id
-            sql = f"select * from stations where instance_id='{instance_id}'"
+            sql = f"select * from drf_apsviz_station where model_run_id='{instance_id}'"
             name = f"{instance_id}_station_properies_view"
 
             # TODO probably need to update this name - 5/21/21 - okay updated ...
             #  but maybe need to make this a little less messy
             db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-            asgsdb = ASGS_DB(logger, db_name, instance_id)
+            asgsdb = ASGS_DB(logger, instance_id)
             meta_dict = asgsdb.getRunMetadata()
             raw_date = meta_dict['currentdate']
             if raw_date:
@@ -379,7 +398,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
             else: # tropical
                 # title = f"Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
                 title = f"Observations - Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']}({meta_dict['stormnumber']}) Advisory:{meta_dict['advisory']} Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
-            geo.publish_featurestore_sqlview(name, title, store_name, sql, key_column='gid', geom_name='the_geom', geom_type='Geometry', workspace=worksp)
+            geo.publish_featurestore_sqlview(name, title, store_name, sql, key_column='station_id', geom_name='geom', geom_type='Geometry', workspace=worksp)
 
             # now set the default style
             geo.set_default_style(worksp, name, style_name)
@@ -391,10 +410,7 @@ def add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_
             layergrp["wfs"].append({"title": title, "layername": full_layername, "metclass": meta_dict['forcing.metclass'], "info": info_dict, "project_code": meta_dict['suite.project_code'], "product_type": "obs"})
 
     else:
-        logger.info(f"Observations config file:{csv_file_path} does not exist. Skipping creation of obs/mod layer")
-        utils = GeneralUtils(logger)
-        msg = f"Error encountered with instance id: {instance_id}. Did not create Observations layer because the station properties config file: {csv_file_path} was not found"
-        utils.send_slack_msg(msg, 'slack_issues_channel')
+        logger.info(f"Observations for model run id {instance_id} do not exist. Skipping creation of obs/mod layer")
 
     return layergrp
 
@@ -409,7 +425,7 @@ def add_shapefile_datastores(logger, geo, instance_id, worksp, shp_path, layergr
 
     # retrieve run.properties metadata fro this instance_id
     db_name = os.getenv('ASGS_DB_DATABASE', 'asgs').strip()
-    asgsdb = ASGS_DB(logger, db_name, instance_id)
+    asgsdb = ASGS_DB(logger, instance_id)
     meta_dict = asgsdb.getRunMetadata()
 
     # now check to see if this is a tropical storm and only continue if it is
@@ -645,9 +661,12 @@ def main(args):
             logger.info("Error encountered while loading image mosaic into GeoServer - program exiting")
             raise SystemExit()
 
-        # now put NOAA OBS .csv file into geoserver
-        next_layergrp = add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host, new_layergrp)
-        if (new_layergrp is None):
+        # now put NOAA OBS .csv file into db
+        add_props_datastore(logger, geo, instance_id, worksp, final_path, geoserver_host)
+
+        # now create jndi datastore for observations from APSViz Gauges DB
+        next_layergrp = add_dbprops_datastore(logger, geo, instance_id, worksp, new_layergrp)
+        if (next_layergrp is None):
             logger.info("Error encountered while loading noaa observation layer into GeoServer - program exiting")
             raise SystemExit()
 
