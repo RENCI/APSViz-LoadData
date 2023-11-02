@@ -87,7 +87,7 @@ class APSVIZ_GAUGES_DB(BASE_DB):
 
         try:
             sql_stmt = 'SELECT model_run_id FROM drf_apsviz_station WHERE model_run_id=%s'
-            params = [self.instance]
+            params = [self.instanceId]
             self.logger.debug(f"sql statement is: {sql_stmt} params are: {params}")
             self.cursor.execute(sql_stmt, params)
             ret = self.cursor.fetchone()

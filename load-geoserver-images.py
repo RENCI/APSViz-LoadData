@@ -365,7 +365,7 @@ def add_dbprops_datastore(logger, geo, instance_id, worksp, layergrp):
     logger.info(f"Adding the station properties datastore for instance id: {instance_id}")
     # set up datastore name
     store_name = str(instance_id) + "_station_props"
-    style_name = "observations_style_v3"
+    style_name = "observations_style_v4"
 
     # get apsviz_gauges db connection
     asgs_obsdb = APSVIZ_GAUGES_DB(logger, instance_id)
@@ -398,7 +398,7 @@ def add_dbprops_datastore(logger, geo, instance_id, worksp, layergrp):
             else: # tropical
                 # title = f"Observations - Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
                 title = f"Observations - Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']}({meta_dict['stormnumber']}) Advisory:{meta_dict['advisory']} Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']}"
-            geo.publish_featurestore_sqlview(name, title, store_name, sql, key_column='gid', geom_name='the_geom', geom_type='Geometry', workspace=worksp)
+            geo.publish_featurestore_sqlview(name, title, store_name, sql, key_column='station_id', geom_name='geom', geom_type='Geometry', workspace=worksp)
 
             # now set the default style
             geo.set_default_style(worksp, name, style_name)
