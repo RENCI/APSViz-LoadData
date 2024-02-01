@@ -463,11 +463,11 @@ class TerriaCatalogDB:
     def get_wms_style(self, layername):
 
         if self.MAXWVEL_STYLE in layername:
-            return f'{self.MAXWVEL_STYLE}_env_style'
+            return f'{self.MAXWVEL_STYLE}_env_style_v2_rev'
         elif self.SWAN_STYLE in layername:
-            return f'{self.SWAN_STYLE}_env_style_v2'
+            return f'{self.SWAN_STYLE}_env_style_v2_rev'
         else:
-            return f'{self.MAXELE_STYLE}_env_style_v2'
+            return f'{self.MAXELE_STYLE}_env_style_v2_rev'
 
 
     # create an info section for this group item
