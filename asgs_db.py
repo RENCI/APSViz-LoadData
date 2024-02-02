@@ -38,14 +38,14 @@ class ASGS_DB(BASE_DB):
         key_value = url
 
         try:
-            sql_stmt = 'INSERT INTO "ASGS_Mon_config_item" (key, value, instance_id, uid) VALUES(%s, %s, %s, %s)'
+            sql_stmt = 'INSERT INTO "config_item" (key, value, instance_id, uid) VALUES(%s, %s, %s, %s)'
             params = [f"{key_name}", f"{key_value}", self.instance, f"{self.uid}"]
             self.logger.debug(f"sql statement is: {sql_stmt} params are: {params}")
 
             self.cursor.execute(sql_stmt, params)
         except:
             e = sys.exc_info()[0]
-            self.logger.error(f"FAILURE - Cannot update ASGS_DB. error {e}")
+            self.logger.error(f"FAILURE - Cannot update APSVIZ_DB. error {e}")
 
     # need to retrieve some values - related to this run - from the ASGS DB
     # currently: Date, Cycle, Storm Name (if any), and Advisory (if any)
@@ -73,7 +73,7 @@ class ASGS_DB(BASE_DB):
 
         try:
             for key in metadata_dict.keys():
-                sql_stmt = 'SELECT value FROM "ASGS_Mon_config_item" WHERE instance_id=%s AND uid=%s AND key=%s'
+                sql_stmt = 'SELECT value FROM "config_item" WHERE instance_id=%s AND uid=%s AND key=%s'
                 params = [self.instance, self.uid, key]
                 self.logger.debug(f"sql statement is: {sql_stmt} params are: {params}")
                 self.cursor.execute(sql_stmt, params)
