@@ -467,7 +467,7 @@ class TerriaCatalogDB:
         elif self.SWAN_STYLE in layername:
             return f'{self.SWAN_STYLE}_env_style_v2'
         else:
-            return f'{self.MAXELE_STYLE}_env_style_v2'
+            return f'{self.MAXELE_STYLE}_env_style_v3'
 
 
     # create an info section for this group item

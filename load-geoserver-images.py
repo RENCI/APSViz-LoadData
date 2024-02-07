@@ -158,7 +158,7 @@ def add_s3_coveragestore(logger, geo, s3_url, instance_id, worksp, layergrp):
             title, meta_dict = update_layer_title(logger, geo, instance_id, worksp, store_name)
 
             # set the default style for this layer - maxele style for now
-            style_name = "maxele_env_style_v2"
+            style_name = "maxele_env_style_v3"
             geo.set_default_style(worksp, store_name, style_name)
 
             # TODO: DO WE NEED THIS?
@@ -208,7 +208,7 @@ def add_imagemosaic_coveragestore(logger, geo, url, instance_id, worksp, imagemo
                 style_name = f"{layer_name.split('_')[1]}_env_style_v2"
             elif "maxele" in layer_name:
                 # style_name = f"{layer_name.split('_')[1][:-2]}_env_style_v2"
-                style_name = f"{layer_name.split('_')[1][:-2]}_env_style_rick"
+                style_name = f"{layer_name.split('_')[1][:-2]}_env_style_v3"
             else:
                 style_name = f"{layer_name.split('_')[1][:-2]}_env_style"
             geo.set_default_style(worksp, layer_name, style_name)
@@ -264,7 +264,7 @@ def add_kalpana_coveragestore(logger, geo, url, instance_id, worksp, kalpana_pat
                 title, meta_dict = update_layer_title(logger, geo, instance_id, worksp, title_layer_name, kalpana=True)
 
                 # set the default style for this layer
-                geo.set_default_style(worksp, layer_name, 'maxele_env_style_v2')
+                geo.set_default_style(worksp, layer_name, 'maxele_env_style_v3')
 
                 # update DB with url of layer for access from website NEED INSTANCE ID for this
                 layer_url = f'{url}/{worksp}/wcs?service=WCS&version=1.1.1&request=DescribeCoverage&identifiers={worksp}:{layer_name}'
