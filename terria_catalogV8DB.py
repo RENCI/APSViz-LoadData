@@ -199,7 +199,7 @@ class TerriaCatalogDB:
         '"name": "Name",' \
         '"description": "This data is produced by the ADCIRC model and presented through the ADCIRC Prediction System Visualizer",' \
         '"dataCustodian": "RENCI",' \
-        '"type": "wms",' \
+        '"type": "wfs",' \
         '"layers": "layers",' \
         '"legends": [' \
             '{' \
