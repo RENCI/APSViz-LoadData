@@ -15,7 +15,16 @@ from general_utils import GeneralUtils
 
 
 # map layer names to human readable names
-
+layer_name_dict = {
+    'obs': "Observations",
+    'maxwvel63': "Maximum Wind Velocity",
+    'maxele63': "Maximum Water Level",
+    'swan_HS_max63': "Maximum Significant Wave Height",
+    'maxinundepth63': "Maximum Inundation Depth",
+    'maxele_level_downscaled_epsg4326': "Hi-Res Maximum Water Level",
+    'hec_ras_water_surface': "HEC/RAS Water Surface",
+    'hurr_composite': "Hurricane Track"
+}
 
 
 # format raw date from DB
@@ -98,9 +107,9 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name, kalpana=Fal
 
     title = "N/A"
     if (meta_dict['forcing.metclass'] == 'synoptic'):
-        title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({title_layer_name})"
+        title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name_dict[title_layer_name]})"
     else: # tropical
-        title = f"Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']}({meta_dict['stormnumber']}) Advisory:{meta_dict['advisory']} Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({title_layer_name})"
+        title = f"Date: {run_date} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']}({meta_dict['stormnumber']}) Advisory:{meta_dict['advisory']} Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name_dict[title_layer_name]})"
         # title = f"Date: {run_date} Cycle: {meta_dict['currentcycle']} Storm Name: {meta_dict['forcing.tropicalcyclone.stormname']} Advisory:{meta_dict['advisory']} Forecast Type: {meta_dict['asgs.enstorm']} Location: {meta_dict['monitoring.rmqmessaging.locationname']} Instance: {meta_dict['instancename']} ADCIRC Grid: {meta_dict['ADCIRCgrid']} ({layer_name.split('_')[1]})"
     logger.debug(f"setting this coverage: {layer_name} to {title}")
 
