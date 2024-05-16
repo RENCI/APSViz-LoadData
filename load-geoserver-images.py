@@ -14,6 +14,10 @@ from zipfile import ZipFile
 from general_utils import GeneralUtils
 
 
+# map layer names to human readable names
+
+
+
 # format raw date from DB
 def format_raw_date(raw_date):
     run_date = "N/A"

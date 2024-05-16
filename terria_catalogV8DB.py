@@ -93,6 +93,7 @@ class TerriaCatalogDB:
     MAXELE_STYLE = 'maxele'
     MAXWVEL_STYLE = 'maxwvel'
     SWAN_STYLE = 'swan'
+    MAXINUNDEPTH_STYLE = 'maxinundepth'
 
     cat_wms_item = '{' \
         '"id": "Id",' \
