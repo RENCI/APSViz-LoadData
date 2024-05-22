@@ -22,7 +22,7 @@ layer_name_dict = {
     'swan_HS_max63': "Maximum Significant Wave Height",
     'maxinundepth63': "Maximum Inundation Depth",
     'maxele_level_downscaled_epsg4326': "Hi-Res Maximum Water Level",
-    'hec_ras_water_surface': "HEC/RAS Water Surface",
+    'HECRAS': "HEC/RAS Water Surface",
     'hurr_composite': "Hurricane Track"
 }
 
