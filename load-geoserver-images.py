@@ -103,7 +103,7 @@ def update_layer_title(logger, geo, instance_id, worksp, layer_name, kalpana=Fal
     if (kalpana):
         title_layer_name = layer_name
     else:
-        title_layer_name = layer_name.split('_')[1]
+        title_layer_name = layer_name.split('_', 1)[1]
 
     title = "N/A"
     if (meta_dict['forcing.metclass'] == 'synoptic'):
