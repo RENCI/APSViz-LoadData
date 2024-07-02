@@ -201,7 +201,7 @@ class TerriaCatalogDB:
         '"description": "This data is produced by the ADCIRC model and presented through the ADCIRC Prediction System Visualizer",' \
         '"dataCustodian": "RENCI",' \
         '"type": "wfs",' \
-        '"layers": "layers",' \
+        '"typeNames": "layers",' \
         '"legends": [' \
             '{' \
                 '"url": "url",' \
