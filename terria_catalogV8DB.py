@@ -623,7 +623,7 @@ class TerriaCatalogDB:
         wfs_item["id"] = item_id
         wfs_item["show"] = show
         wfs_item["name"] = name
-        wfs_item["layers"] = type_names
+        wfs_item["typeNames"] = type_names
         wfs_item["url"] = url
         wfs_item["legends"][0]["url"] = legend_url
 
