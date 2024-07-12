@@ -200,8 +200,8 @@ class TerriaCatalogDB:
         '"name": "Name",' \
         '"description": "This data is produced by the ADCIRC model and presented through the ADCIRC Prediction System Visualizer",' \
         '"dataCustodian": "RENCI",' \
-        '"type": "wfs",' \
-        '"typeNames": "layers",' \
+        '"type": "wms",' \
+        '"layers": "layers",' \
         '"legends": [' \
             '{' \
                 '"url": "url",' \
@@ -623,7 +623,7 @@ class TerriaCatalogDB:
         wfs_item["id"] = item_id
         wfs_item["show"] = show
         wfs_item["name"] = name
-        wfs_item["typeNames"] = type_names
+        wfs_item["layers"] = type_names
         wfs_item["url"] = url
         wfs_item["legends"][0]["url"] = legend_url
 
