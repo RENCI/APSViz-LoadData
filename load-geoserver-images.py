@@ -21,7 +21,7 @@ layer_name_dict = {
     'maxele63': "Maximum Water Level",
     'swan_HS_max63': "Maximum Significant Wave Height",
     'maxinundepth63': "Maximum Inundation Depth",
-    'maxele_level_downscaled_epsg4326': "Hi-Res Maximum Water Level",
+    'maxele_high_res': "Hi-Res Maximum Water Level",
     'HECRAS': "HEC/RAS Water Surface",
     'hurr_composite': "Hurricane Track"
 }
