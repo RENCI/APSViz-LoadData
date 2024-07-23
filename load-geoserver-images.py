@@ -657,7 +657,7 @@ def main(args):
         final_path = f"{data_directory}/{instance_id}/final"
         #mbtiles_path = final_path + "/mbtiles"
         imagemosaic_path = final_path + "/cogeo"
-        kalpana_path = final_path + "/kalpana"
+        kalpana_path = final_path + "/kalpana/north_carolina"
         shp_path = f"{data_directory}/{instance_id}/input/shapefiles"
 
         # add a coverage store for any kalpana tiffs
